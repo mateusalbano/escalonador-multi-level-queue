@@ -5,6 +5,7 @@ from typing import Any
 
 
 class process_info:
+
     """
     essa classe define como o processo é visto pelo escalonador
     o escalonador não deve acessar o atributo de comportamento do processo
@@ -18,11 +19,13 @@ class process_info:
         self.ellapsed_cpu_time = 0
         self.ellapsed_wait_time = 0
 
-    # quanto menor o valor da prioridade, maior ela é, é assim que funciona a fila de prioridades do Python, não me culpe
-    # nesse caso quanto mais tempo o processo ficar esperando, menor vai ser o valor da prioridade e portanto ela se torna maior
-    # quanto maior o tempo de processamento maior o valor da prioridade e menor ela é.
+    """
+    quanto menor o valor da prioridade, maior ela é, é assim que funciona a fila de prioridades do Python, não me culpe
+    nesse caso quanto mais tempo o processo ficar esperando, menor vai ser o valor da prioridade e portanto ela se torna maior
+    quanto maior o tempo de processamento maior o valor da prioridade e menor ela é.
+    """
     def get_priority(self) -> int:
-        self.ellapsed_cpu_time - self.ellapsed_wait_time
+        return self.ellapsed_cpu_time - self.ellapsed_wait_time
 
 @dataclass(order=True)
 class PrioritizedItem:
@@ -34,7 +37,8 @@ class scheduler:
     DISPATCH = 0
     WAIT = 1
     TIME_RUN_OUT = 2
-    # WAKE_UP = 3
+    IDLE_CPU = 3
+    # WAKE_UP = 4
     
     def __init__(self, quantum = 5):
         self.__last_id = 0
@@ -52,16 +56,18 @@ class scheduler:
         self.__last_id += 1
         self.__new_ready(new_process_info)
 
-    # realiza a execução do processo ocupando a CPU e faz as validações necessárias
-    # se o processo fizer I/O, vai para a fila de espera
-    # se o quantum acabar, vai para a fila de pronto correspondente
-    # se o processo executar todas suas instruções, é finalizado
+    """
+    realiza a execução do processo ocupando a CPU e faz as validações necessárias
+    se o processo fizer I/O, vai para a fila de espera
+    se o quantum acabar, vai para a fila de pronto correspondente
+    se o processo executar todas suas instruções, é finalizado
+    """
     def execute(self):
         if self.is_over():
-            raise RuntimeError("can't execute idle cpu")
+            raise RuntimeError("can't execute terminated cpu")
 
         if self.__executing is None:
-            self.__context_switch(self.DISPATCH)
+            self.__context_switch(self.IDLE_CPU)
         
         if not self.__executing is None:
             cpu_execution = self.__executing.process.execute()
@@ -88,8 +94,10 @@ class scheduler:
         for i in new_ready:
             self.__new_ready(self.__wait_processes.pop(i))
 
-    # coloca um novo processo na fila de pronto
-    # os processos interativos são encapsulados em uma classe para funcionar com a fila de prioridades.
+    """
+    coloca um novo processo na fila de pronto
+    os processos interativos são encapsulados em uma classe para funcionar com a fila de prioridades.
+    """
     def __new_ready(self, process_info):
         type = process_info.process.get_type()
         if type == process.SYSTEM_PROCESS:
@@ -100,10 +108,12 @@ class scheduler:
         else:
             self.__batch_processes.put(process_info)
 
-    # troca o contexto da cpu
-    # end_process define se o processo deve ser finalizado ou não
-    # processo finalizado é retirado de execução e perde sua referência
-    # processo não finalizado é retirado da execução e colocado em sua fila correspondente
+    """
+    troca o contexto da cpu
+    end_process define se o processo deve ser finalizado ou não
+    processo finalizado é retirado de execução e perde sua referência
+    processo não finalizado é retirado da execução e colocado em sua fila correspondente
+    """
     def __context_switch(self, action: int):
         if action == self.WAIT:
             self.__wait_processes.append(self.__executing)
@@ -127,7 +137,7 @@ class scheduler:
         self.__executing.quantum = self.__quantum
 
 
-    # retorna verdadeiro ou falso para caso a CPU terminou
+    # retorna verdadeiro ou falso para caso a CPU terminou (não há processos prontos e nem em espera)
     def is_over(self) -> bool:
         if self.__executing != None:
             return False

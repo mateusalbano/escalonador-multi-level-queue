@@ -8,8 +8,10 @@ class process:
     CPU_BOUND = 0
     IO_BOUND = 1
 
-    #se o processo é do sistema ou batch, ele será CPU bound e nunca fará I/O
-    #se o processo é interativo, pode ser CPU bound ou I/O bound
+    """
+    se o processo é do sistema ou batch, ele será CPU bound e nunca fará I/O
+    se o processo é interativo, pode ser CPU bound ou I/O bound
+    """
     def __init__(self, type, num_instructions = 10, wait_time_range = (5, 10)):
         self.__type = type
         if type == self.SYSTEM_PROCESS or type == self.BATCH_PROCESS:
@@ -28,11 +30,13 @@ class process:
 
     def get_type(self):
         return self.__type
-
-    #retorna True se quer executar CPU
-    #retora False se quer fazer I/O
-    #se for um processo CPU bound tem 1 chance em 20 de fazer I/O
-    #se for um processo I/O bound tem 5 chances em 20 de fazer I/O 
+    
+    """
+    retorna True se quer executar CPU
+    retora False se quer fazer I/O
+    se for um processo CPU bound tem 1 chance em 20 de fazer I/O
+    se for um processo I/O bound tem 5 chances em 20 de fazer I/O 
+    """
     def execute(self) -> bool:
         if self.__wait_time > 0:
             return
