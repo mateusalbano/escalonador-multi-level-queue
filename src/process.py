@@ -10,12 +10,12 @@ class process:
 
     #se o processo é do sistema ou batch, ele será CPU bound e nunca fará I/O
     #se o processo é interativo, pode ser CPU bound ou I/O bound
-    def __init__(self, type, num_instructions = 10, wait_time_range = (5, 20)):
+    def __init__(self, type, num_instructions = 10, wait_time_range = (5, 10)):
         self.__type = type
         if type == self.SYSTEM_PROCESS or type == self.BATCH_PROCESS:
             self.__behaviour = self.CPU_BOUND
         elif type == self.INTERACTIVE_PROCESS:
-            random_number = random.randint(1,3)
+            random_number = random.randint(1,4)
             if random_number >= 2:
                 self.__behaviour = self.IO_BOUND
             else:
@@ -36,20 +36,23 @@ class process:
     def execute(self) -> bool:
         if self.__wait_time > 0:
             return
+        if self.__num_instructions == 1:
+            self.__num_instructions = 0
+            return True
         
         self.__num_instructions -= 1
         if self.__type == self.INTERACTIVE_PROCESS:
             random_number = random.randint(1,20)
             if self.__behaviour == self.CPU_BOUND:
-                if random_number < 20:
+                if random_number >= 20:
                     self.__wait_time = random.randint(self.__wait_time_range[0], self.__wait_time_range[1])
-                    return True
-                return False
+                    return False
+                return True
             else:
-                if random_number <= 15:
+                if random_number >= 15:
                     self.__wait_time = random.randint(self.__wait_time_range[0], self.__wait_time_range[1])
-                    return True
-                return False
+                    return False
+                return True
         
         return True
     
@@ -61,3 +64,4 @@ class process:
     
     def is_over(self):
         return self.__num_instructions == 0
+    
