@@ -38,7 +38,6 @@ class scheduler:
     WAIT = 1
     TIME_RUN_OUT = 2
     IDLE_CPU = 3
-    # WAKE_UP = 4
     
     def __init__(self, quantum = 5):
         self.__last_id = 0
@@ -69,6 +68,8 @@ class scheduler:
         if self.__executing is None:
             self.__context_switch(self.IDLE_CPU)
         
+        self.__wake_up()
+
         if not self.__executing is None:
             cpu_execution = self.__executing.process.execute()
             self.__executing.ellapsed_cpu_time += 1
@@ -81,18 +82,6 @@ class scheduler:
                 if self.__executing.quantum <= 0:
                     self.__context_switch(self.TIME_RUN_OUT)
         
-        new_ready = []
-        i = 0
-        for process_info in self.__wait_processes:
-            is_ready = process_info.process.wait()
-            if is_ready:
-                new_ready.append(i)
-            else:
-                process_info.ellapsed_wait_time += 1
-            i += 1
-
-        for i in new_ready:
-            self.__new_ready(self.__wait_processes.pop(i))
 
     """
     coloca um novo processo na fila de pronto
@@ -107,6 +96,20 @@ class scheduler:
             self.__interactive_processes.put(wrapper)
         else:
             self.__batch_processes.put(process_info)
+
+    # método utilizado pelo execute para fazer contagem de espera e acordar processos que terminaram a espera.
+    def __wake_up(self):
+        new_ready = []
+        for process_info in self.__wait_processes:
+            is_ready = process_info.process.wait()
+            if is_ready:
+                new_ready.append(process_info)
+            else:
+                process_info.ellapsed_wait_time += 1
+
+        for process_info in new_ready:
+            self.__wait_processes.remove(process_info)
+            self.__new_ready(process_info)
 
     """
     troca o contexto da cpu
@@ -155,3 +158,41 @@ class scheduler:
             return False
         
         return True
+    
+    """
+    retorna uma string mostrando o contexto da última execução
+    o uso de listas se deve ao fato de que as strings em Python são imutáveis, listas não, o que otimiza o programa.
+    """
+    def get_context(self) -> str:
+        system_list = list(self.__system_processes.queue)
+        interactive_list = list(self.__interactive_processes.queue)
+        batch_list = list(self.__batch_processes.queue)
+        output = list("Executing: ")
+        if not self.__executing is None:
+            output.extend(["p", str(self.__executing.pid), " (", self.__executing.process.get_type_str(), ")"])
+
+        output.extend(list("\n\nSystem processes: [ "))
+
+        for process_info in system_list:
+            output.extend(["p", str(process_info.pid), " "])
+            
+        output.extend(list("]\nInteractive processes: [ "))
+
+        for wrapper in interactive_list:
+            output.extend(["p", str(wrapper.item.pid), " "])
+
+        output.extend(list("]\nBatch processes: [ "))
+
+        for process_info in batch_list:
+            output.extend(["p", str(process_info.pid), " "])
+
+        output.extend(list("]\n\nWait processes: [ "))
+
+        for process_info in self.__wait_processes:
+            output.extend(["p", str(process_info.pid), " "])
+
+        output.append("]\n")
+
+        return "".join(output)
+
+

@@ -28,8 +28,17 @@ class process:
         self.__wait_time = 0
         self.__wait_time_range = wait_time_range
 
-    def get_type(self):
+    def get_type(self) -> int:
         return self.__type
+    
+    #retorna uma string do tipo de processo
+    def get_type_str(self) -> str:
+        if self.__type == self.SYSTEM_PROCESS:
+            return "SYSTEM"
+        if self.__type == self.INTERACTIVE_PROCESS:
+            return "INTERACTIVE"
+        else:
+            return "BATCH"
     
     """
     retorna True se quer executar CPU
@@ -60,12 +69,16 @@ class process:
         
         return True
     
+    """
+    função para contabilizar a espera do processo
+    se a espera acabou, retorna True, do contrário, retorna False
+    """
     def wait(self) -> bool:
         self.__wait_time -= 1
         if self.__wait_time == 0:
             return True
         return False
     
+    # retorna True ou False para caso o programa terminou de executar
     def is_over(self):
-        return self.__num_instructions == 0
-    
+        return self.__num_instructions == 0 
