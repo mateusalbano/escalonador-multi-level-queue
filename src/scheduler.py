@@ -3,7 +3,6 @@ from process import process
 from dataclasses import dataclass, field
 from typing import Any
 
-
 class process_info:
 
     """
@@ -194,5 +193,3 @@ class scheduler:
         output.append("]\n")
 
         return "".join(output)
-
-

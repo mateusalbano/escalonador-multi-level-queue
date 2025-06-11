@@ -3,6 +3,12 @@ import time
 from scheduler import scheduler
 from process import process
 
+"""
+múltiplos núcleos
+fila de menor prioridade não precisa executar só quando a fila de maior prioridade estiver vazia.
+há processos de sistema que nunca acabam
+"""
+
 s = scheduler()
 
 for i in range(15):
