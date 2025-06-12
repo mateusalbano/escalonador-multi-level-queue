@@ -1,4 +1,5 @@
 import queue
+import random
 from process import process
 from dataclasses import dataclass, field
 from typing import Any
@@ -64,19 +65,20 @@ class scheduler:
         if self.is_over():
             raise RuntimeError("can't execute terminated cpu")
 
+        self.__wake_up()
+
         if self.__executing is None:
             self.__context_switch(self.IDLE_CPU)
-        
-        self.__wake_up()
 
         if not self.__executing is None:
             cpu_execution = self.__executing.process.execute()
-            self.__executing.ellapsed_cpu_time += 1
             if not cpu_execution:
                 self.__context_switch(self.WAIT)
             elif self.__executing.process.is_over():
+                self.__executing.ellapsed_cpu_time += 1
                 self.__context_switch(self.DISPATCH)
             else:
+                self.__executing.ellapsed_cpu_time += 1
                 self.__executing.quantum -= 1
                 if self.__executing.quantum <= 0:
                     self.__context_switch(self.TIME_RUN_OUT)
@@ -111,30 +113,55 @@ class scheduler:
             self.__new_ready(process_info)
 
     """
+    roleta para escolher qual fila será executada
+    considerando que nenhuma das filas estejam vazias, as chances de uma fila ser escolhida:
+    fila de processos de sistema: 50%
+    fila de processos interativos: 33.3%
+    fila de processos batch: 16.6%
+    se uma fila estiver vazia as chances são distribuídas para as demais filas
+    se todas as filas estiverem vazias, significa que não há processos prontos para serem escalonados
+    """
+    def __next_executing(self) -> int:
+        wheel = []
+        if not self.__system_processes.empty():
+            wheel.extend([process.SYSTEM_PROCESS, process.SYSTEM_PROCESS, process.SYSTEM_PROCESS])
+        if not self.__interactive_processes.empty():
+            wheel.extend([process.INTERACTIVE_PROCESS, process.INTERACTIVE_PROCESS])
+        if not self.__batch_processes.empty():
+            wheel.append(process.BATCH_PROCESS)
+
+        if len(wheel) == 0:
+            return -1
+        
+        return wheel[random.randint(0, len(wheel) - 1)] 
+
+    """
     troca o contexto da cpu
     end_process define se o processo deve ser finalizado ou não
     processo finalizado é retirado de execução e perde sua referência
     processo não finalizado é retirado da execução e colocado em sua fila correspondente
+    a fila escolhida depende da execução da roleta (__next_executing())
     """
     def __context_switch(self, action: int):
+
         if action == self.WAIT:
             self.__wait_processes.append(self.__executing)
             self.__executing = None
         elif action == self.TIME_RUN_OUT:
             self.__new_ready(self.__executing)
-            
-        if not self.__system_processes.empty():
+
+        next = self.__next_executing()
+
+        if next == process.SYSTEM_PROCESS:
             self.__executing = self.__system_processes.get()
-        elif not self.__interactive_processes.empty():
+        elif next == process.INTERACTIVE_PROCESS:
             self.__executing = self.__interactive_processes.get().item
-        elif not self.__batch_processes.empty():
+        elif next == process.BATCH_PROCESS:
             self.__executing = self.__batch_processes.get()
-        elif action != self.DISPATCH:
-            return
         else:
-            self.__executing = None
-            return 
-           
+            if action == self.DISPATCH:
+                self.__executing = None
+            return
         
         self.__executing.quantum = self.__quantum
 
@@ -168,7 +195,7 @@ class scheduler:
         batch_list = list(self.__batch_processes.queue)
         output = list("Executing: ")
         if not self.__executing is None:
-            output.extend(["p", str(self.__executing.pid), " (", self.__executing.process.get_type_str(), ")"])
+            output.extend(["p", str(self.__executing.pid), " (", self.__executing.process.get_type_str(), ") ", "quantum: ", str(self.__executing.quantum)])
 
         output.extend(list("\n\nSystem processes: [ "))
 

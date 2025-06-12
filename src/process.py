@@ -12,7 +12,7 @@ class process:
     se o processo é do sistema ou batch, ele será CPU bound e nunca fará I/O
     se o processo é interativo, pode ser CPU bound ou I/O bound
     """
-    def __init__(self, type, num_instructions = 10, wait_time_range = (5, 10)):
+    def __init__(self, type, num_instructions = 10, wait_time_range = (2, 10)):
         self.__type = type
         if type == self.SYSTEM_PROCESS or type == self.BATCH_PROCESS:
             self.__behaviour = self.CPU_BOUND
@@ -24,6 +24,8 @@ class process:
                 self.__behaviour = self.CPU_BOUND
         else:
             raise ValueError("invalid process type")
+        
+        self.__last_exec_io = False
         self.__num_instructions = num_instructions
         self.__wait_time = 0
         self.__wait_time_range = wait_time_range
@@ -48,25 +50,32 @@ class process:
     """
     def execute(self) -> bool:
         if self.__wait_time > 0:
-            return
+            raise RuntimeError("process is waiting")
+        
         if self.__num_instructions == 1:
             self.__num_instructions = 0
             return True
         
-        self.__num_instructions -= 1
+
         if self.__type == self.INTERACTIVE_PROCESS:
             random_number = random.randint(1,20)
             if self.__behaviour == self.CPU_BOUND:
-                if random_number >= 20:
+                if not self.__last_exec_io and random_number >= 20:
+                    self.__last_exec_io = True
                     self.__wait_time = random.randint(self.__wait_time_range[0], self.__wait_time_range[1])
                     return False
+                self.__last_exec_io = False
+                self.__num_instructions -= 1
                 return True
             else:
-                if random_number >= 15:
+                if not self.__last_exec_io and random_number >= 15:
+                    self.__last_exec_io = True
                     self.__wait_time = random.randint(self.__wait_time_range[0], self.__wait_time_range[1])
                     return False
+                self.__last_exec_io = False
+                self.__num_instructions -= 1
                 return True
-        
+        self.__num_instructions -= 1
         return True
     
     """
