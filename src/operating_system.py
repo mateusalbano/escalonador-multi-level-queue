@@ -1,7 +1,7 @@
 import random
 import time
-from scheduler import scheduler
 from process import process
+from scheduler import scheduler
 
 """
 múltiplos núcleos
@@ -12,9 +12,9 @@ há processos de sistema que nunca acabam
 s = scheduler()
 
 for i in range(15):
-    s.add_process(process(random.randint(process.SYSTEM_PROCESS, process.BATCH_PROCESS)))
+    s.add_process(process(random.randint(0, 2)))
 
-print("INÍCIO\n")
+print("START\n")
 
 while not s.is_over():
     print(s.get_context(), "\n")
@@ -22,4 +22,4 @@ while not s.is_over():
     time.sleep(1)
 
 print(s.get_context(), "\n")
-print("FIM")
+print("END")
