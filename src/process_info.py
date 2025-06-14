@@ -11,7 +11,6 @@ class process_info:
     def __init__(self, process: process, pid: int):
         self.pid = pid
         self.process = process
-        self.quantum = 0
         self.ellapsed_cpu_time = 0
         self.ellapsed_wait_time = 0
 
