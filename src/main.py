@@ -19,18 +19,15 @@ frame_top = tk.Frame(root)
 frame_top.pack(pady=10)
 
 labels = ["processos de sistema:", "processos interativos:", "processos batch:", "clock:"]
-entries = []
+spins = []
 
-entry = None
+spinbox = None
 for i, label in enumerate(labels):
     tk.Label(frame_top, text=label).grid(row=0, column=i*2, padx=5)
-    entry = tk.Entry(frame_top, width=5, justify='center',
-                     validate="key", validatecommand=vcmd)
-    entry.insert(tk.END, "5")
-    entry.grid(row=0, column=i*2+1, padx=5)
-    entries.append(entry)
-entry.delete('0', tk.END)
-entry.insert(tk.END, "1")
+    spinbox = tk.Spinbox(frame_top, justify='center', from_=1, width=5, to=15, textvariable=tk.StringVar(value=5))
+    spinbox.grid(row=0, column=i*2+1, padx=5)
+    spins.append(spinbox)
+spinbox.config(from_=0.2, to=3, increment=0.2, textvariable=tk.StringVar(value=1.0))
 
 frame_exec = tk.Frame(root, bd=2, relief="groove", padx=10, pady=10)
 frame_exec.pack(padx=20, pady=10, fill="both", expand=True)
@@ -65,21 +62,6 @@ def run():
     btn["state"] = "normal"
     tkinter.messagebox.showinfo(message="Fim da execução!")
     executando = False
-
-def input_valido() -> bool:
-    val1 = int(entries[0].get()) if entries[0].get() else 0
-    val2 = int(entries[1].get()) if entries[0].get() else 0
-    val3 = int(entries[2].get()) if entries[0].get() else 0
-    total = val1 + val2 + val3
-    
-    if total < 1 or total > 50:
-        tkinter.messagebox.showwarning(message="Número de processos deve estar entre 1 e 50.")
-        return False
-    
-    val4 = int(entries[3].get()) if entries[0].get() else 0
-    if val4 < 1 or val4 > 10:
-        tkinter.messagebox.showwarning(message="Tempo de clock deve estar entre 1 e 10.")
-    return True
     
 
 def iniciar_parar():
@@ -88,9 +70,6 @@ def iniciar_parar():
     executando = not executando
 
     if executando:
-        if not input_valido():
-            executando = False
-            return
         btn.config(text="parar")
         text_exec.delete('1.0', tk.END)
     else:
@@ -99,12 +78,11 @@ def iniciar_parar():
         btn["state"] = "disabled"
         return
 
-    n_sistemas = int(entries[0].get()) if entries[0].get() else 0
-    n_interativos = int(entries[1].get()) if entries[1].get() else 0
-    n_batchs = int(entries[2].get()) if entries[2].get() else 0
-    clock = int(entries[3].get()) if entries[2].get() else 0
+    n_sistemas = int(spins[0].get())
+    n_interativos = int(spins[1].get())
+    n_batchs = int(spins[2].get())
+    clock = float(spins[3].get())
     escalonador = scheduler(clock=clock)
-
 
     for _ in range(int(n_sistemas / 2)):
         escalonador.add_process(process(process.SYSTEM_PROCESS))
