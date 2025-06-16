@@ -10,6 +10,13 @@ from process_info import process_info
 
 class scheduler:
     
+    """
+    construtor da classe scheduler
+    parâmetro quantum representa o quantum que cada processo recebe no momento que ele é escalonado
+    parâmetro n_cores define o número de cores (núcleos) que serão executados
+    parâmtro clock define o tempo em segundos do intervalo de uma execução e outra (time.sleep(self.__clock))
+    """
+
     def __init__(self, quantum = 5, n_cores = 4, clock = 1):
         self.__last_id = 0
         self.__system_processes = queue.Queue()
@@ -145,6 +152,20 @@ class scheduler:
 
         return "".join(output)
     
+    def started(self) -> bool:
+        return self.__started
+    
+    def system_list(self) -> list:
+        return list(self.__system_processes.queue)
+    
+    def interactive_list(self) -> list:
+        return list(self.__system_processes.queue)
+    
+    def batch_list(self) -> list:
+        return list(self.__system_processes.queue)
+    
+    def wait_list(self) -> list:
+        return list(self.__system_processes.queue)
     # getters para que a classe core acesse os atributos necessários
     
     def get_quantum(self) -> int:
