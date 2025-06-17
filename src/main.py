@@ -24,12 +24,12 @@ spins = []
 spinbox = None
 for i, label in enumerate(labels):
     tk.Label(frame_top, text=label).grid(row=0, column=i*2, padx=5)
-    spinbox = tk.Spinbox(frame_top, justify='center', from_=1, width=5, to=15, textvariable=tk.StringVar(value=5))
+    spinbox = tk.Spinbox(frame_top, justify='center', from_=0, width=5, to=15, textvariable=tk.StringVar(value=5))
     spinbox.grid(row=0, column=i*2+1, padx=5)
     spins.append(spinbox)
 spinbox.config(from_=0.2, to=3, increment=0.2, textvariable=tk.StringVar(value=1.0))
 
-frame_exec = tk.Frame(root, bd=2, relief="groove", padx=10, pady=10)
+frame_exec = tk.Frame(root, bd=2, padx=10, pady=10)
 frame_exec.pack(padx=20, pady=10, fill="both", expand=True)
 
 tk.Label(frame_exec, text="Execução:").pack(anchor="w")
@@ -45,6 +45,9 @@ def escrever(texto: str):
     text_exec.config(state="normal")
     text_exec.insert(tk.END, texto)
     text_exec.config(state="disabled")
+
+def entrada_valida() -> bool:
+    return int(spins[0].get()) + int(spins[1].get()) + int(spins[2].get()) > 0
 
 def run():
     global executando
@@ -70,6 +73,11 @@ def iniciar_parar():
     executando = not executando
 
     if executando:
+        if not entrada_valida():
+            executando = False
+            tkinter.messagebox.showwarning(message="Deve haver no mínimo um processo.", title="Aviso")
+            return
+
         btn.config(text="parar")
         text_exec.delete('1.0', tk.END)
     else:
