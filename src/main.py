@@ -5,15 +5,9 @@ import tkinter.messagebox
 from process import process
 from scheduler import scheduler
 
-# função de validação para aceitar apenas números
-def validar_numero(valor):
-    return valor.isdigit() or valor == ""
-
 root = tk.Tk()
 root.title("Escalonador de múltiplas filas")
 root.geometry("700x500")
-
-vcmd = (root.register(validar_numero), "%P")
 
 frame_top = tk.Frame(root)
 frame_top.pack(pady=10)
@@ -43,7 +37,7 @@ executando = False
 
 def escrever(texto: str):
     text_exec.config(state="normal")
-    text_exec.insert(tk.END, texto)
+    text_exec.replace('1.0', tk.END, texto)
     text_exec.config(state="disabled")
 
 def entrada_valida() -> bool:
@@ -53,17 +47,17 @@ def run():
     global executando
     global escalonador
     while executando and not escalonador.is_over():
-        text_exec.config(state="normal")
-        text_exec.delete('1.0', tk.END)
         escrever(escalonador.get_context())
         time.sleep(escalonador.get_clock())
 
-    escrever("\nFIM")
+    text_exec.config(state="normal")
+    text_exec.insert(tk.END, "\nEND")
+    text_exec.config(state="disabled")
     if escalonador.started():
         escalonador.end()
     btn.config(text="iniciar")
     btn["state"] = "normal"
-    tkinter.messagebox.showinfo(message="Fim da execução!")
+    tkinter.messagebox.showinfo(title="Mensagem", message="Fim da execução!")
     executando = False
     
 

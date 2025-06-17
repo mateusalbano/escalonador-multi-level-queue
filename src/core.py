@@ -55,19 +55,19 @@ class core:
             time.sleep(self.__clock)
             if self.__running is None:
                 self.__context_switch(self.IDLE)
+                continue
 
-            if not self.__running is None:
-                cpu_execution = self.__running.process.execute()
-                if not cpu_execution:
-                    self.__context_switch(self.WAIT)
-                elif self.__running.process.is_over():
-                    self.__running.ellapsed_cpu_time += 1
-                    self.__context_switch(self.DISPATCH)
-                else:
-                    self.__running.ellapsed_cpu_time += 1
-                    self.__current_quantum -= 1
-                    if self.__current_quantum <= 0:
-                        self.__context_switch(self.TIME_RUN_OUT)
+            cpu_execution = self.__running.process.execute()
+            if not cpu_execution:
+                self.__context_switch(self.WAIT)
+            elif self.__running.process.is_over():
+                self.__running.ellapsed_cpu_time += 1
+                self.__context_switch(self.DISPATCH)
+            else:
+                self.__running.ellapsed_cpu_time += 1
+                self.__current_quantum -= 1
+                if self.__current_quantum <= 0:
+                    self.__context_switch(self.TIME_RUN_OUT)
 
     """
     roleta para escolher qual fila será executada
