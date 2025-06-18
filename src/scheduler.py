@@ -16,7 +16,6 @@ class scheduler:
     parâmetro n_cores define o número de cores (núcleos) que serão executados
     parâmtro clock define o tempo em segundos do intervalo de uma execução e outra (time.sleep(self.__clock))
     """
-
     def __init__(self, quantum = 5, n_cores = 4, clock = 1):
         self.__last_id = 0
         self.__system_processes = queue.Queue()
@@ -24,6 +23,7 @@ class scheduler:
         self.__batch_processes = queue.Queue()
         self.__wait_processes = []
         self.__cores = []
+        self.__dead_processes = []
         self.__clock = clock
         for i in range (n_cores):
             self.__cores.append(core(self, i, quantum, clock))
@@ -148,6 +148,11 @@ class scheduler:
         for process_info in self.__wait_processes:
             output.extend(["p", str(process_info.pid), " "])
 
+        output.append("]\nDead processes: [ ")
+
+        for process_info in self.__dead_processes:
+            output.extend(["p", str(process_info.pid), " "])
+
         output.append("]\n")
 
         return "".join(output)
@@ -155,19 +160,7 @@ class scheduler:
     def started(self) -> bool:
         return self.__started
     
-    def system_list(self) -> list:
-        return list(self.__system_processes.queue)
-    
-    def interactive_list(self) -> list:
-        return list(self.__system_processes.queue)
-    
-    def batch_list(self) -> list:
-        return list(self.__system_processes.queue)
-    
-    def wait_list(self) -> list:
-        return list(self.__system_processes.queue)
     # getters para que a classe core acesse os atributos necessários
-    
     def get_quantum(self) -> int:
         return self.__quantum
     
@@ -185,3 +178,6 @@ class scheduler:
     
     def get_wait_processes(self) -> list:
         return self.__wait_processes  
+    
+    def get_dead_processes(self) -> list:
+        return self.__dead_processes

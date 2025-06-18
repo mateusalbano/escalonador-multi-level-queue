@@ -57,7 +57,6 @@ class process:
         if self.__num_instructions == 1:
             self.__num_instructions = 0
             return True
-        
 
         if self.__type == self.INTERACTIVE_PROCESS:
             random_number = random.randint(1,20)
@@ -74,6 +73,7 @@ class process:
             self.__last_exec_io = False
         if self.__num_instructions > 0:
             self.__num_instructions -= 1
+            
         return True
     
     """

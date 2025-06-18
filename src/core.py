@@ -106,6 +106,8 @@ class core:
             self.__running = None
         elif action == self.TIME_RUN_OUT:
             self.__scheduler.new_ready(self.__running)
+        elif action == self.DISPATCH:
+            self.__scheduler.get_dead_processes().append(self.__running)
 
         next = self.__next_executing()
 

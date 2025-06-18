@@ -8,12 +8,12 @@ from scheduler import scheduler
 
 root = tk.Tk()
 root.title("Escalonador de múltiplas filas")
-root.geometry("900x675")
+root.geometry("1000x750")
 frame_top = tk.Frame(root)
 frame_top.pack(pady=10)
 
 # lista de labels
-labels = ["processos de sistema:", "processos interativos:", "processos batch:", "clock:", "cores:"]
+labels = ["processos de sistema:", "processos interativos:", "processos batch:", "processos permanentes:", "clock:", "cores:"]
 
 # lista de spins
 spins = []
@@ -24,9 +24,10 @@ for i, label in enumerate(labels):
     spinbox.grid(row=0, column=i*2+1, padx=5)
     spins.append(spinbox)
 
-# altera as configurações do último spinbox adicionado (clock)
-spins[3].config(from_=0.2, to=3, increment=0.2, textvariable=tk.StringVar(value=1.0))
-spins[4].config(from_=1, to=20, textvariable=tk.StringVar(value=4))
+# altera configurações de alguns spinboxes específicos
+spins[3].config(from_=0, to=45, textvariable=tk.StringVar(value=1))
+spins[4].config(from_=0.2, to=3, increment=0.2, textvariable=tk.StringVar(value=1.0))
+spins[5].config(from_=1, to=20, textvariable=tk.StringVar(value=4))
 
 frame_exec = tk.Frame(root, bd=2, padx=10, pady=10)
 frame_exec.pack(padx=20, pady=10, fill="both", expand=True)
@@ -51,9 +52,18 @@ def escrever(texto: str):
     text_exec.replace('1.0', tk.END, texto)
     text_exec.config(state="disabled")
 
-# valida se o usuário escolheu pelo menos 1 processo.
+# valida se o usuário escolheu pelo menos 1 processo e se o número de processos permanentes é válido.
 def entrada_valida() -> bool:
-    return int(spins[0].get()) + int(spins[1].get()) + int(spins[2].get()) > 0
+    sum = int(spins[0].get()) + int(spins[1].get()) + int(spins[2].get())
+    if not sum > 0:
+        tkinter.messagebox.showwarning(message="Deve haver no mínimo um processo.", title="Aviso")
+        return False
+    
+    if int(spins[3].get()) > sum:
+        tkinter.messagebox.showwarning(message="Número de processos permanentes deve ser menor ou igual ao número de processos.", title="Aviso")
+        return False
+
+    return True
 
 # função executada em paralelo para atualizar o campo de texto.
 def run():
@@ -63,6 +73,7 @@ def run():
         escrever(escalonador.get_context())
         time.sleep(escalonador.get_clock())
 
+    escrever(escalonador.get_context())
     text_exec.config(state="normal")
     text_exec.insert(tk.END, "\nEND")
     text_exec.config(state="disabled")
@@ -72,6 +83,33 @@ def run():
     btn["state"] = "normal"
     tkinter.messagebox.showinfo(title="Mensagem", message="Fim da execução!")
     executando = False
+
+# função que gera uma lista de booleanos aleatórios que determinam a permanencia dos processos
+def randomiza_processos_permanentes(total: int, n_permanentes: int) -> list:
+    chance = float(n_permanentes) / total
+    chances = []
+
+    for _ in range(total):
+        if random.random() < chance:
+            n_permanentes -= 1
+            chances.append(False)
+        else:
+            chances.append(True)
+    
+    i = 0
+    while n_permanentes > 0:
+        if chances[i]:
+            chances[i] = False
+            n_permanentes -= 1
+        i += 1
+
+    while n_permanentes < 0:
+        if not chances[i]:
+            chances[i] = True
+            n_permanentes += 1  
+        i += 1
+
+    return chances
     
 # função associada ao botão de iniciar ou parar
 def iniciar_parar():
@@ -82,7 +120,6 @@ def iniciar_parar():
     if executando:
         if not entrada_valida():
             executando = False
-            tkinter.messagebox.showwarning(message="Deve haver no mínimo um processo.", title="Aviso")
             return
 
         btn.config(text="parar")
@@ -96,23 +133,20 @@ def iniciar_parar():
     n_sistemas = int(spins[0].get())
     n_interativos = int(spins[1].get())
     n_batchs = int(spins[2].get())
-    clock = float(spins[3].get())
-    n_cores = int(spins[4].get())
+    n_permanentes = int(spins[3].get())
+    processos_permanentes = randomiza_processos_permanentes(total=n_sistemas + n_interativos + n_batchs, n_permanentes=n_permanentes)
+    clock = float(spins[4].get())
+    n_cores = int(spins[5].get())
     escalonador = scheduler(clock=clock, n_cores=n_cores)
 
-    for _ in range(int(n_sistemas / 2)):
-        escalonador.add_process(process(process.SYSTEM_PROCESS, num_instructions= random.randint(7, 15)))
-
-    n_sistemas_inf = int(n_sistemas / 2) if n_sistemas % 2 == 0 else int(n_sistemas / 2) + 1
-
-    for _ in range(n_sistemas_inf):
-        escalonador.add_process(process(process.SYSTEM_PROCESS, ends=False))
+    for _ in range(n_sistemas):
+        escalonador.add_process(process(process.SYSTEM_PROCESS, num_instructions=random.randint(7, 15), ends=processos_permanentes.pop()))
 
     for _ in range(n_interativos):
-        escalonador.add_process(process(process.INTERACTIVE_PROCESS, num_instructions= random.randint(7, 15)))
+        escalonador.add_process(process(process.INTERACTIVE_PROCESS, num_instructions=random.randint(7, 15), ends=processos_permanentes.pop()))
 
     for _ in range(n_batchs):
-        escalonador.add_process(process(process.BATCH_PROCESS, num_instructions= random.randint(7, 15)))
+        escalonador.add_process(process(process.BATCH_PROCESS, num_instructions=random.randint(7, 15), ends=processos_permanentes.pop()))
 
     escalonador.start()
     thread = threading.Thread(target=run)
