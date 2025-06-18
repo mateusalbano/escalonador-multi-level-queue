@@ -73,7 +73,7 @@ class process:
             self.__last_exec_io = False
         if self.__num_instructions > 0:
             self.__num_instructions -= 1
-            
+
         return True
     
     """
@@ -88,4 +88,4 @@ class process:
     
     # retorna True ou False para caso o programa terminou de executar
     def is_over(self):
-        return self.__num_instructions == 0 
+        return self.__num_instructions == 0

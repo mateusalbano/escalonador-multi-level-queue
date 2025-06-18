@@ -83,33 +83,6 @@ def run():
     btn["state"] = "normal"
     tkinter.messagebox.showinfo(title="Mensagem", message="Fim da execução!")
     executando = False
-
-# função que gera uma lista de booleanos aleatórios que determinam a permanencia dos processos
-def randomiza_processos_permanentes(total: int, n_permanentes: int) -> list:
-    chance = float(n_permanentes) / total
-    chances = []
-
-    for _ in range(total):
-        if random.random() < chance:
-            n_permanentes -= 1
-            chances.append(False)
-        else:
-            chances.append(True)
-    
-    i = 0
-    while n_permanentes > 0:
-        if chances[i]:
-            chances[i] = False
-            n_permanentes -= 1
-        i += 1
-
-    while n_permanentes < 0:
-        if not chances[i]:
-            chances[i] = True
-            n_permanentes += 1  
-        i += 1
-
-    return chances
     
 # função associada ao botão de iniciar ou parar
 def iniciar_parar():
@@ -134,7 +107,10 @@ def iniciar_parar():
     n_interativos = int(spins[1].get())
     n_batchs = int(spins[2].get())
     n_permanentes = int(spins[3].get())
-    processos_permanentes = randomiza_processos_permanentes(total=n_sistemas + n_interativos + n_batchs, n_permanentes=n_permanentes)
+    total = n_sistemas + n_interativos + n_batchs
+    processos_permanentes = [False for _ in range(n_permanentes)]
+    processos_permanentes.extend([True for _ in range(total - n_permanentes)])
+    random.shuffle(processos_permanentes)
     clock = float(spins[4].get())
     n_cores = int(spins[5].get())
     escalonador = scheduler(clock=clock, n_cores=n_cores)
