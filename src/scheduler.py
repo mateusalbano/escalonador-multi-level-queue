@@ -17,7 +17,7 @@ class scheduler:
     parâmtro clock define o tempo em segundos do intervalo de uma execução e outra (time.sleep(self.__clock))
     """
     def __init__(self, quantum = 5, n_cores = 4, clock = 1):
-        self.__last_id = 0
+        self.__next_id = 0
         self.__system_processes = queue.Queue()
         self.__interactive_processes = queue.PriorityQueue()
         self.__batch_processes = queue.Queue()
@@ -59,8 +59,8 @@ class scheduler:
 
     # cria um novo processo e o associa com a fila correspondente
     def add_process(self, process: process):
-        new_process_info = process_info(process, self.__last_id)
-        self.__last_id += 1
+        new_process_info = process_info(process, self.__next_id)
+        self.__next_id += 1
         self.new_ready(new_process_info)
 
     """

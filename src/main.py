@@ -2,7 +2,7 @@ import random
 import threading
 import time
 import tkinter as tk
-import tkinter.messagebox
+import tkinter.messagebox as mb
 from process import process
 from scheduler import scheduler
 
@@ -56,11 +56,11 @@ def escrever(texto: str):
 def entrada_valida() -> bool:
     sum = int(spins[0].get()) + int(spins[1].get()) + int(spins[2].get())
     if not sum > 0:
-        tkinter.messagebox.showwarning(message="Deve haver no mínimo um processo.", title="Aviso")
+        mb.showwarning(message="Deve haver no mínimo um processo.", title="Aviso")
         return False
     
     if int(spins[3].get()) > sum:
-        tkinter.messagebox.showwarning(message="Número de processos permanentes deve ser menor ou igual ao número de processos.", title="Aviso")
+        mb.showwarning(message="Número de processos permanentes deve ser menor ou igual ao número de processos.", title="Aviso")
         return False
 
     return True
@@ -81,7 +81,7 @@ def run():
         escalonador.end()
     btn.config(text="iniciar")
     btn["state"] = "normal"
-    tkinter.messagebox.showinfo(title="Mensagem", message="Fim da execução!")
+    mb.showinfo(title="Mensagem", message="Fim da execução!")
     executando = False
     
 # função associada ao botão de iniciar ou parar
