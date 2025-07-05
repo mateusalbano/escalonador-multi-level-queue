@@ -12,7 +12,7 @@ Escalonador é o programa de um sistema operacional multiprogramável responsáv
 <h1>Simulação</h1>
 Este projeto simula um escalonador de múltiplas filas, é possível utilizar a interface gráfica para escolher parâmetros de execução.
 
-![image](https://github.com/user-attachments/assets/7eeae4ef-b91e-45e0-855f-cee638640707)
+![image](https://github.com/user-attachments/assets/825611bd-4cf9-4c51-b837-41e161b31485)
 
 <ul>
   <li>
