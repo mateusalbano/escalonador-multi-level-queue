@@ -8,11 +8,12 @@ Escalonador é o programa de um sistema operacional multiprogramável responsáv
 <h1>Multi-level-queue (MLQ)</h1>
 É uma estratégia de escalonamento na qual os processos prontos são colocados em diferentes filas baseadas em seu tipo.  Cada fila de processos prontos tem uma prioridade, sendo a fila de processos de sistema com a maior prioridade, processos interativos de média prioridade e processos batch de menor prioridade.
 
+![image](https://github.com/user-attachments/assets/825611bd-4cf9-4c51-b837-41e161b31485)
  
 <h1>Simulação</h1>
 Este projeto simula um escalonador de múltiplas filas, é possível utilizar a interface gráfica para escolher parâmetros de execução.
 
-![image](https://github.com/user-attachments/assets/825611bd-4cf9-4c51-b837-41e161b31485)
+![image](https://github.com/user-attachments/assets/094d1110-543b-40bf-b004-a0fea03b623c)
 
 <ul>
   <li>
