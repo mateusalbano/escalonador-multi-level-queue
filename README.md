@@ -2,8 +2,8 @@
 Simulação de escalonador de múltiplas filas.<br>
 
 <h1>O que é um escalonador?</h1>
-Escalonador é o programa de um sistema operacional multiprogramável responsável pela alocação e retirada de processos para a CPU seguindo uma estratégia específica.
-É importante que um escalonador aloque os processos a CPU de forma justa, sem causar starvation (situação em que um processo nunca é alocado). 
+Escalonador é o programa de um sistema operacional multiprogramável responsável pela alocação e retirada de processos na CPU seguindo uma estratégia específica.
+É importante que um escalonador aloque os processos na CPU de forma justa, sem causar starvation (situação em que um processo nunca é alocado). 
 
 <h1>Multi-level-queue (MLQ)</h1>
 É uma estratégia de escalonamento na qual os processos prontos são colocados em diferentes filas baseadas em seu tipo.  Cada fila de processos prontos tem uma prioridade, sendo a fila de processos de sistema com a maior prioridade, processos interativos de média prioridade e processos batch de menor prioridade.
@@ -42,5 +42,5 @@ Este projeto simula um escalonador de múltiplas filas, é possível utilizar a 
 Para executar, é só buscar o arquivo <strong>main.exe</strong>, dentro da pasta <strong>/src/dist/main</strong>.
 
 <h1>Participantes</h1>
-Antônio José Brogni, Lucas Bauchspiess e Mateus Albano Santos.
+Antônio José Brogni (https://github.com/abrogni), Lucas Bauchspiess (https://github.com/lbauch) e Mateus Albano Santos (https://github.com/mateusalbano).
 
