@@ -3,8 +3,11 @@ import threading
 import time
 import tkinter as tk
 import tkinter.messagebox as mb
-from process import process
-from scheduler import scheduler
+from process.process import Process
+from scheduler.scheduler import Scheduler
+from process.commom_process import CommomProcess
+from process.interactive_process import InteractiveProcess
+from scheduler.scheduler_context import SchedulerContext
 
 root = tk.Tk()
 root.title("Escalonador de múltiplas filas")
@@ -13,7 +16,7 @@ frame_top = tk.Frame(root)
 frame_top.pack(pady=10)
 
 # lista de labels
-labels = ["processos de sistema:", "processos interativos:", "processos batch:", "processos permanentes:", "clock:", "cores:"]
+labels = ["processos de sistema:", "processos interativos:", "processos batch:", "processos permanentes:", "clock:", "cpus:"]
 
 # lista de spins
 spins = []
@@ -44,6 +47,7 @@ text_exec.config(yscrollcommand=scroll.set)
 
 #variáveis globais
 escalonador = None
+contexto = None
 executando = False
 
 # função que escreve no campo de texto, mantendo-o inalterável pelo usuário.
@@ -69,16 +73,17 @@ def entrada_valida() -> bool:
 def run():
     global executando
     global escalonador
+    global contexto
     while executando and not escalonador.is_over():
-        escrever(escalonador.get_context())
+        escrever(contexto.get())
         time.sleep(escalonador.get_clock())
 
-    escrever(escalonador.get_context())
+    escrever(contexto.get())
     text_exec.config(state="normal")
     text_exec.insert(tk.END, "\nEND")
     text_exec.config(state="disabled")
     if escalonador.started():
-        escalonador.end()
+        escalonador.stop()
     btn.config(text="iniciar")
     btn["state"] = "normal"
     mb.showinfo(title="Mensagem", message="Fim da execução!")
@@ -88,6 +93,7 @@ def run():
 def iniciar_parar():
     global executando
     global escalonador
+    global contexto
     executando = not executando
 
     if executando:
@@ -99,7 +105,7 @@ def iniciar_parar():
         text_exec.delete('1.0', tk.END)
     else:
         btn.config(text="iniciar")
-        escalonador.end()
+        escalonador.stop()
         btn["state"] = "disabled"
         return
 
@@ -112,17 +118,18 @@ def iniciar_parar():
     processos_permanentes.extend([True for _ in range(total - n_permanentes)])
     random.shuffle(processos_permanentes)
     clock = float(spins[4].get())
-    n_cores = int(spins[5].get())
-    escalonador = scheduler(clock=clock, n_cores=n_cores)
+    n_cpus = int(spins[5].get())
+    escalonador = Scheduler(clock=clock, n_cpus=n_cpus)
+    contexto = SchedulerContext(escalonador)
 
     for _ in range(n_sistemas):
-        escalonador.add_process(process(process.SYSTEM_PROCESS, num_instructions=random.randint(7, 15), ends=processos_permanentes.pop()))
+        escalonador.add_process(CommomProcess(type=Process.SYSTEM_PROCESS, num_instructions=random.randint(7, 15), ends=processos_permanentes.pop()))
 
     for _ in range(n_interativos):
-        escalonador.add_process(process(process.INTERACTIVE_PROCESS, num_instructions=random.randint(7, 15), ends=processos_permanentes.pop()))
+        escalonador.add_process(InteractiveProcess(behaviour=random.choice([Process.IO_BOUND, Process.CPU_BOUND]), num_instructions=random.randint(7, 15), ends=processos_permanentes.pop()))
 
     for _ in range(n_batchs):
-        escalonador.add_process(process(process.BATCH_PROCESS, num_instructions=random.randint(7, 15), ends=processos_permanentes.pop()))
+        escalonador.add_process(CommomProcess(type=Process.BATCH_PROCESS, num_instructions=random.randint(7, 15), ends=processos_permanentes.pop()))
 
     escalonador.start()
     thread = threading.Thread(target=run)
