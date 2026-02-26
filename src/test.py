@@ -4,36 +4,33 @@ import time
 from process.commom_process import CommomProcess
 from process.interactive_process import InteractiveProcess
 from process.process import Process
-from scheduler.scheduler import Scheduler
-from scheduler.scheduler_context import SchedulerContext
+from scheduler.scheduler_simulation import SchedulerSimulation
 
-
-scheduler = Scheduler(clock=1)
-sc = SchedulerContext(scheduler)
-
-
-for i in range(5):
-    scheduler.add_process(CommomProcess(Process.SYSTEM_PROCESS))
+clock =  0.5
+scheduler_sim = SchedulerSimulation(clock=clock)
 
 
 for i in range(5):
-    scheduler.add_process(CommomProcess(Process.BATCH_PROCESS))
+    scheduler_sim.add_process(CommomProcess(Process.SYSTEM_PROCESS))
+
+
+for i in range(5):
+    scheduler_sim.add_process(CommomProcess(Process.BATCH_PROCESS))
 
 for i in range(5):
     behaviour = random.choice([Process.CPU_BOUND, Process.IO_BOUND])
-    scheduler.add_process(InteractiveProcess(behaviour))
+    scheduler_sim.add_process(InteractiveProcess(behaviour))
 
-scheduler.start()
+scheduler_sim.start()
 
 
-
-while not scheduler.is_over():
-    ctx = sc.get()
+while not scheduler_sim.is_over():
+    ctx = scheduler_sim.get_context()
     print(ctx)
-    time.sleep(1)
+    time.sleep(clock)
 
-final_ctx = sc.get()
+final_ctx = scheduler_sim.get_context()
+scheduler_sim.stop()
+
 print(final_ctx)
-
-
 print("finished")

@@ -1,59 +1,25 @@
 import queue
 
 import random
-import threading
-import time
 
-from cpu import Cpu
 from prioritized_item import PrioritizedItem
 from process.process import Process
 from scheduler.scheduler_interface import SchedulerInterface
+from process.interactive_process import InteractiveProcess
 
 class Scheduler(SchedulerInterface):
 
-    def __init__(self, time_slice = 5, n_cpus = 4, clock = 1):
+    def __init__(self, time_slice = 5):
         self.__next_pid = 0
+
         self.__system_processes = queue.Queue()
         self.__interactive_processes = queue.PriorityQueue()
         self.__batch_processes = queue.Queue()
+
         self.__wait_processes = []
-        self.__cpus = []
-
-        for i in range(n_cpus):
-            self.__cpus.append(Cpu(self, i, clock))
-
         self.__dead_processes = []
-        self.__clock = clock
+
         self.__time_slice = time_slice
-        self.__started = False
-
-
-    def start(self):
-        if self.__started:
-            raise RuntimeError("scheduler already started")
-        self.__started = True
-
-        self.__start_wait_process_check()
-        self.__start_cpus()
-
-
-    def __start_wait_process_check(self):
-        thread = threading.Thread(target=self.__wait_process_check, args=())
-        thread.start()
-
-
-    def __start_cpus(self):
-        for cpu in self.__cpus:
-            cpu.start()
-
-
-    def stop(self):
-        if not self.__started:
-            raise RuntimeError("scheduler is not running")
-        
-        self.__started = False
-        for cpu in self.__cpus:
-            cpu.stop()
         
 
     def add_process(self, process: Process):
@@ -116,21 +82,17 @@ class Scheduler(SchedulerInterface):
         pid = self.__next_pid
         self.__next_pid += 1
         return pid
+    
+    def wait_process_check(self):
+        ready_process_list = []
 
+        for process in self.__wait_processes:
+            process.wait()
 
-    def __wait_process_check(self):
-        while self.__started:
+            if process.can_execute():
+                ready_process_list.append(process)
 
-            ready_process_list = []
-
-            for process in self.__wait_processes:
-                process.wait()
-
-                if process.can_execute():
-                    ready_process_list.append(process)
-
-            self.__wake_up_process_list(ready_process_list)
-            time.sleep(self.__clock)
+        self.__wake_up_process_list(ready_process_list)
 
 
     def __wake_up_process_list(self, process_list):
@@ -149,7 +111,7 @@ class Scheduler(SchedulerInterface):
         elif type == Process.BATCH_PROCESS:
             self.__batch_processes.put(process)
 
-    def __enqueue_interactive(self, process: Process):
+    def __enqueue_interactive(self, process: InteractiveProcess):
 
         # wrap entries in a PrioritizedItem so the queue can order them
         # solely by priority.  Tuples would cause a TypeError when two
@@ -157,17 +119,14 @@ class Scheduler(SchedulerInterface):
         # InteractiveProcess instances themselves.
         self.__interactive_processes.put(PrioritizedItem(process.get_priority(), process))
 
-    def __pop_interactive(self) -> Process:
+    def __pop_interactive(self) -> InteractiveProcess:
         return self.__interactive_processes.get().item
     
     # def get_context(self) -> str:
     #     sc = SchedulerContext(self)
     #     return sc.get()
 
-    def is_over(self) -> bool:
-        for cpu in self.__cpus:
-            if not cpu.is_idle():
-                return False
+    def is_idle(self) -> bool:
         
         if not self.__system_processes.empty():
             return False
@@ -183,14 +142,9 @@ class Scheduler(SchedulerInterface):
         
         return True
     
-    def started(self) -> bool:
-        return self.__started
 
     def get_time_slice(self) -> int:
         return self.__time_slice
-
-    def get_clock(self) -> int:
-        return self.__clock
 
     def get_system_processes(self) -> list[Process]:
         return list(self.__system_processes.queue)
@@ -206,6 +160,3 @@ class Scheduler(SchedulerInterface):
 
     def get_dead_processes(self) -> list[Process]:
         return list(self.__dead_processes)
-    
-    def get_cpus(self) -> list[Cpu]:
-        return list(self.__cpus)

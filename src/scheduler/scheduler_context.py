@@ -1,9 +1,11 @@
 from scheduler.scheduler import Scheduler
 from process.process import Process
+from cpu import Cpu
 
 class SchedulerContext:
-    def __init__(self, scheduler: Scheduler):
+    def __init__(self, scheduler: Scheduler, cpus: list[Cpu]):
         self.__scheduler = scheduler
+        self.__cpus = cpus
 
 
     def get(self) -> str:
@@ -18,7 +20,7 @@ class SchedulerContext:
         lines.append("CPUs:")
         # helper for converting process type constants to human-readable names
 
-        for cpu in self.__scheduler.get_cpus():
+        for cpu in self.__cpus:
             if cpu.is_idle():
                 lines.append(f"  CPU{cpu.get_core_id()}: idle")
             else:
