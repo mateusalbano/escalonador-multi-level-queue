@@ -6,12 +6,12 @@ Escalonador é o programa de um sistema operacional multiprogramável responsáv
 É importante que um escalonador aloque os processos na CPU de forma justa, sem causar starvation (situação em que um processo nunca é alocado). 
 
 <h1>Multi-level-queue (MLQ)</h1>
-É uma estratégia de escalonamento na qual os processos prontos são colocados em diferentes filas baseadas em seu tipo.  Cada fila de processos prontos tem uma prioridade, sendo a fila de processos de sistema com a maior prioridade, processos interativos de média prioridade e processos batch de menor prioridade.
+É uma estratégia de escalonamento na qual os processos prontos são colocados em diferentes filas baseadas em seu tipo.  Cada fila de processos prontos tem uma prioridade, sendo a fila de processos de sistema com a maior prioridade, processos interativos de média prioridade e processos batch de menor prioridade.<br>
 
 <img width="886" height="812" alt="image" src="https://github.com/user-attachments/assets/d00921b9-6e0c-4a1c-b187-d81e9de95e93" />
  
 <h1>Simulação</h1>
-Este projeto simula um escalonador de múltiplas filas, é possível utilizar a interface gráfica para escolher parâmetros de execução.
+Este projeto simula um escalonador de múltiplas filas, é possível utilizar a interface gráfica para escolher parâmetros de execução.<br>
 
 <img width="993" height="772" alt="image" src="https://github.com/user-attachments/assets/fa3ac104-738a-4ed5-864d-bb5b048b4046" />
 
@@ -39,7 +39,7 @@ Este projeto simula um escalonador de múltiplas filas, é possível utilizar a 
 </ul>
 
 <h1>Execução</h1>
-Para executar, é só buscar o arquivo <strong>main.exe</strong>, dentro da pasta <strong>/src/dist/main</strong>.
+Para executar, basta fazer o download do projeto e escolher um ambiente Python.
 
 <h1>Participantes</h1>
 Antônio José Brogni https://github.com/abrogni, Lucas Bauchspiess https://github.com/lbauch e Mateus Albano Santos https://github.com/mateusalbano.
