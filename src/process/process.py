@@ -8,7 +8,6 @@ class Process(ABC):
     CPU_BOUND = 0
     IO_BOUND = 1
 
-
     def __init__(self, num_instructions = 10, ends = True):
         self._elapsed_execution_time = 0
         self._set_num_instructions(num_instructions, ends)
@@ -42,6 +41,14 @@ class Process(ABC):
     def is_over(self) -> bool:
         return self._num_instructions == 0
     
+    @staticmethod
+    def type_to_str(type: int):
+        type_names = {
+            Process.SYSTEM_PROCESS: "system",
+            Process.INTERACTIVE_PROCESS: "interactive",
+            Process.BATCH_PROCESS: "batch",
+        }
+        return type_names[type]
     
     @abstractmethod
     def can_execute(self) -> bool:

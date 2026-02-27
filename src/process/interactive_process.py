@@ -22,6 +22,11 @@ class InteractiveProcess(Process):
     def get_type(self) -> int:
         return Process.INTERACTIVE_PROCESS
     
+    """
+    The lower this values gets higher the priority is, that implies:
+    higher execution time -> smaller priority
+    higher wait time -> higher priority
+    """
     def get_priority(self) -> int:
         return self._elapsed_execution_time - self.__elapsed_wait_time
 

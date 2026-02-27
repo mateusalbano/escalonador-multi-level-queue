@@ -1,140 +1,243 @@
 import random
-
 import threading
 import time
-
 import tkinter as tk
 import tkinter.messagebox as mb
+from typing import Optional
 
 from process.process import Process
 from process.commom_process import CommomProcess
 from process.interactive_process import InteractiveProcess
 from scheduler.scheduler_simulation import SchedulerSimulation
 
-root = tk.Tk()
-root.title("escalonador de múltiplas filas")
-root.geometry("1000x750")
-frame_top = tk.Frame(root)
-frame_top.pack(pady=10)
 
-# lista de labels
-labels = ["processos de sistema:", "processos interativos:", "processos batch:", "processos permanentes:", "clock:", "cpus:"]
+class UIConfig:
+    WINDOW_TITLE = "escalonador de múltiplas filas"
+    WINDOW_SIZE = "1000x750"
+    TEXT_FONT = ("Consolas", 16)
+    PADDING_Y = 10
+    PADDING_X = 20
+    SPINBOX_WIDTH = 5
+    BUTTON_WIDTH = 15
+    TEXT_HEIGHT = 12
 
-# lista de spins
-spins = []
 
-for i, label in enumerate(labels):
-    tk.Label(frame_top, text=label).grid(row=0, column=i*2, padx=5)
-    spinbox = tk.Spinbox(frame_top, justify='center', from_=0, width=5, to=15, textvariable=tk.StringVar(value=5))
-    spinbox.grid(row=0, column=i*2+1, padx=5)
-    spins.append(spinbox)
-
-# altera configurações de alguns spinboxes específicos
-spins[3].config(from_=0, to=45, textvariable=tk.StringVar(value=1))
-spins[4].config(from_=0.2, to=3, increment=0.2, textvariable=tk.StringVar(value=1.0))
-spins[5].config(from_=1, to=20, textvariable=tk.StringVar(value=4))
-
-frame_exec = tk.Frame(root, bd=2, padx=10, pady=10)
-frame_exec.pack(padx=20, pady=10, fill="both", expand=True)
-
-tk.Label(frame_exec, text="Execução:").pack(anchor="w")
-
-text_exec = tk.Text(frame_exec, height=12, wrap="word", state="disabled", font=("Consolas", 16))
-text_exec.pack(fill="both", expand=True)
-
-scroll = tk.Scrollbar(text_exec, command=text_exec.yview)
-scroll.pack(side=tk.RIGHT, fill=tk.Y)
-
-text_exec.config(yscrollcommand=scroll.set)
-
-#variáveis globais
-simula_escalonador = None
-executando = False
-
-# função que escreve no campo de texto, mantendo-o inalterável pelo usuário.
-def escrever(texto: str):
-    text_exec.config(state="normal")
-    text_exec.replace('1.0', tk.END, texto)
-    text_exec.config(state="disabled")
-
-# valida se o usuário escolheu pelo menos 1 processo e se o número de processos permanentes é válido.
-def entrada_valida() -> bool:
-    sum = int(spins[0].get()) + int(spins[1].get()) + int(spins[2].get())
-    if not sum > 0:
-        mb.showwarning(message="Deve haver no mínimo um processo.", title="Aviso")
-        return False
+class SpinboxConfig:
+    LABELS = [
+        "processos de sistema:",
+        "processos interativos:",
+        "processos batch:",
+        "processos permanentes:",
+        "clock:",
+        "cpus:",
+    ]
     
-    if int(spins[3].get()) > sum:
-        mb.showwarning(message="Número de processos permanentes deve ser menor ou igual ao número de processos.", title="Aviso")
-        return False
+    CONFIGS = [
+        {"from_": 0, "to": 15, "value": 5},      # system processes
+        {"from_": 0, "to": 15, "value": 5},      # interactive processes
+        {"from_": 0, "to": 15, "value": 5},      # batch processes
+        {"from_": 0, "to": 45, "value": 1},      # permanent processes
+        {"from_": 0.2, "to": 3, "increment": 0.2, "value": 1.0},  # clock
+        {"from_": 1, "to": 20, "value": 4},      # cpus
+    ]
 
-    return True
+class ProcessConfig:
+    MIN_INSTRUCTIONS = 7
+    MAX_INSTRUCTIONS = 15
 
-# função executada em paralelo para atualizar o campo de texto.
-def run():
-    global executando
-    global simula_escalonador
-    while executando and not simula_escalonador.is_over():
-        escrever(simula_escalonador.get_context())
-        time.sleep(simula_escalonador.get_clock())
 
-    escrever(simula_escalonador.get_context())
-    text_exec.config(state="normal")
-    text_exec.insert(tk.END, "\nEND")
-    text_exec.config(state="disabled")
-    if simula_escalonador.is_running():
-        simula_escalonador.stop()
-    btn.config(text="iniciar")
-    btn["state"] = "normal"
-    mb.showinfo(title="Mensagem", message="Fim da execução!")
-    executando = False
+class SchedulerApp:
     
-# função associada ao botão de iniciar ou parar
-def iniciar_parar():
-    global executando
-    global simula_escalonador
+    def __init__(self, root: tk.Tk):
+        self.__root = root
+        self.__simulator: Optional[SchedulerSimulation] = None
+        self.__running = False
+        self.__spinboxes = []
+        self.__text_output = None
+        self.__start_button = None
+        
+        self.__setup_ui()
     
-    executando = not executando
+    def __setup_ui(self):
+        self.__root.title(UIConfig.WINDOW_TITLE)
+        self.__root.geometry(UIConfig.WINDOW_SIZE)
+        
+        self.__create_input_frame()
+        self.__create_output_frame()
+        self.__create_button()
 
-    if executando:
-        if not entrada_valida():
-            executando = False
+    
+    def __create_input_frame(self):
+        frame = tk.Frame(self.__root)
+        frame.pack(pady=UIConfig.PADDING_Y)
+        
+        for i, label_text in enumerate(SpinboxConfig.LABELS):
+            tk.Label(frame, text=label_text).grid(row=0, column=i * 2, padx=5)
+            
+            config = SpinboxConfig.CONFIGS[i]
+            spinbox = tk.Spinbox(
+                frame,
+                justify='center',
+                width=UIConfig.SPINBOX_WIDTH,
+                textvariable=tk.StringVar(value=str(config["value"])),
+                **{k: v for k, v in config.items() if k != "value"}
+            )
+            spinbox.grid(row=0, column=i * 2 + 1, padx=5)
+            self.__spinboxes.append(spinbox)
+    
+    def __create_output_frame(self):
+        frame = tk.Frame(self.__root, bd=2, padx=10, pady=10)
+        frame.pack(padx=UIConfig.PADDING_X, pady=UIConfig.PADDING_Y, fill="both", expand=True)
+        
+        tk.Label(frame, text="Execução:").pack(anchor="w")
+        
+        self.__text_output = tk.Text(
+            frame,
+            height=UIConfig.TEXT_HEIGHT,
+            wrap="word",
+            state="disabled",
+            font=UIConfig.TEXT_FONT
+        )
+        self.__text_output.pack(fill="both", expand=True)
+        
+        scrollbar = tk.Scrollbar(self.__text_output, command=self.__text_output.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.__text_output.config(yscrollcommand=scrollbar.set)
+
+    
+    """Create the start/stop button"""
+    def __create_button(self):
+        self.__start_button = tk.Button(
+            self.__root,
+            text="iniciar",
+            width=UIConfig.BUTTON_WIDTH,
+            command=self.__on_start_stop_clicked
+        )
+        self.__start_button.pack(side="right", padx=UIConfig.PADDING_X, pady=UIConfig.PADDING_Y)
+
+    
+    def __get_input_values(self) -> dict:
+        return {
+            "system": int(self.__spinboxes[0].get()),
+            "interactive": int(self.__spinboxes[1].get()),
+            "batch": int(self.__spinboxes[2].get()),
+            "permanent": int(self.__spinboxes[3].get()),
+            "clock": float(self.__spinboxes[4].get()),
+            "cpus": int(self.__spinboxes[5].get()),
+        }
+    
+    def __is_valid_input(self) -> bool:
+        values = self.__get_input_values()
+        total_processes = values["system"] + values["interactive"] + values["batch"]
+        
+        if total_processes == 0:
+            mb.showwarning(
+                message="Deve haver no mínimo um processo.",
+                title="Aviso"
+            )
+            return False
+        
+        if values["permanent"] > total_processes:
+            mb.showwarning(
+                message="Número de processos permanentes deve ser menor ou igual ao número de processos.",
+                title="Aviso"
+            )
+            return False
+        
+        return True
+    
+    def __clear_output(self):
+        self.__update_output("")
+
+
+    def __update_output(self, text: str):
+        self.__text_output.config(state="normal")
+        self.__text_output.replace('1.0', tk.END, text)
+        self.__text_output.config(state="disabled")
+
+    
+    def __create_permanent_flags(self, total: int, permanent_count: int) -> list[bool]:
+        flags = [False] * permanent_count + [True] * (total - permanent_count)
+        random.shuffle(flags)
+        return flags
+    
+
+    def __populate_processes(self, values: dict, permanent_flags: list[bool]):
+
+        def get_num_instructions():
+            return random.randint(ProcessConfig.MIN_INSTRUCTIONS, ProcessConfig.MAX_INSTRUCTIONS)
+
+        for _ in range(values["system"]):
+            num_instruc = get_num_instructions()
+
+            proc = CommomProcess(type=Process.SYSTEM_PROCESS, num_instructions=num_instruc, ends=permanent_flags.pop())
+            self.__simulator.add_process(proc)
+        
+        for _ in range(values["interactive"]):
+            behaviour = random.choice([Process.IO_BOUND, Process.CPU_BOUND])
+            num_instruc = get_num_instructions()
+
+            proc = InteractiveProcess(behaviour=behaviour, num_instructions=num_instruc, ends=permanent_flags.pop())
+            self.__simulator.add_process(proc)
+        
+        for _ in range(values["batch"]):
+            num_instruc = get_num_instructions()
+            proc = CommomProcess(type=Process.BATCH_PROCESS, num_instructions=num_instruc, ends=permanent_flags.pop())
+            self.__simulator.add_process(proc)
+    
+
+    def __run_simulator(self):
+        while self.__running and not self.__simulator.is_over():
+            self.__update_output(self.__simulator.get_context())
+            time.sleep(self.__simulator.get_clock())
+        
+        # Final update
+        self.__update_output(self.__simulator.get_context() + "\nEND")
+        
+        if self.__simulator.is_running():
+            self.__simulator.stop()
+        
+        self.__start_button.config(text="iniciar")
+        self.__start_button["state"] = "normal"
+        mb.showinfo(title="Mensagem", message="Fim da execução!")
+        self.__running = False
+    
+    def __start_simulation(self):
+        if not self.__is_valid_input():
+            self.__running = False
             return
+        
+        self.__start_button.config(text="parar")
+        self.__clear_output()
+        
+        values = self.__get_input_values()
+        total = values["system"] + values["interactive"] + values["batch"]
+        permanent_flags = self.__create_permanent_flags(total, values["permanent"])
+        
+        self.__simulator = SchedulerSimulation(clock=values["clock"], n_cpus=values["cpus"])
+        self.__populate_processes(values, permanent_flags)
+        
+        self.__simulator.start()
+        thread = threading.Thread(target=self.__run_simulator, daemon=True)
+        thread.start()
+    
+    def __stop_simulation(self):
+        self.__start_button.config(text="iniciar")
+        self.__simulator.stop()
+        self.__start_button["state"] = "disabled"
 
-        btn.config(text="parar")
-        text_exec.delete('1.0', tk.END)
-    else:
-        btn.config(text="iniciar")
-        simula_escalonador.stop()
-        btn["state"] = "disabled"
-        return
+    
+    """Handle start/stop button click"""
+    def __on_start_stop_clicked(self):
+        self.__running = not self.__running
+        
+        if self.__running:
+            self.__start_simulation()
+        else:
+            self.__stop_simulation()
 
-    n_sistemas = int(spins[0].get())
-    n_interativos = int(spins[1].get())
-    n_batchs = int(spins[2].get())
-    n_permanentes = int(spins[3].get())
-    total = n_sistemas + n_interativos + n_batchs
-    processos_permanentes = [False for _ in range(n_permanentes)]
-    processos_permanentes.extend([True for _ in range(total - n_permanentes)])
-    random.shuffle(processos_permanentes)
-    clock = float(spins[4].get())
-    n_cpus = int(spins[5].get())
-    simula_escalonador = SchedulerSimulation(clock=clock, n_cpus=n_cpus)
 
-    for _ in range(n_sistemas):
-        simula_escalonador.add_process(CommomProcess(type=Process.SYSTEM_PROCESS, num_instructions=random.randint(7, 15), ends=processos_permanentes.pop()))
-
-    for _ in range(n_interativos):
-        simula_escalonador.add_process(InteractiveProcess(behaviour=random.choice([Process.IO_BOUND, Process.CPU_BOUND]), num_instructions=random.randint(7, 15), ends=processos_permanentes.pop()))
-
-    for _ in range(n_batchs):
-        simula_escalonador.add_process(CommomProcess(type=Process.BATCH_PROCESS, num_instructions=random.randint(7, 15), ends=processos_permanentes.pop()))
-
-    simula_escalonador.start()
-    thread = threading.Thread(target=run)
-    thread.start()
-
-btn = tk.Button(root, text="iniciar", width=15, command=iniciar_parar)
-btn.pack(side="right", padx=20, pady=10)
-
-root.mainloop()
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = SchedulerApp(root)
+    root.mainloop()

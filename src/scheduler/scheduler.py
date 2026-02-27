@@ -1,6 +1,7 @@
 import queue
 
 import random
+from typing import Optional, Tuple
 
 from prioritized_item import PrioritizedItem
 from process.process import Process
@@ -28,7 +29,8 @@ class Scheduler(SchedulerInterface):
         self.__add_process_to_ready(process)
 
 
-    def context_switch(self, process: Process):
+    """Receives a process and gives another one and a time slice"""
+    def context_switch(self, process: Process) -> Tuple[Optional[Process], int]:
         if process:
             self.__schedule_process(process)
 
@@ -44,6 +46,7 @@ class Scheduler(SchedulerInterface):
         
         return None, 0
     
+
     def __schedule_process(self, process: Process):
         if process.is_over():
            self.__dead_processes.append(process)
@@ -62,8 +65,10 @@ class Scheduler(SchedulerInterface):
         
         choice = random.randint(0, len(options) - 1)
         return options[choice]
-        
     
+        
+    """Return a list with the type options, notice that some types appear more than others,
+        which means some types have higher priorities than others"""
     def __create_process_type_options(self):
         options = []
         if not self.__system_processes.empty():
@@ -82,6 +87,7 @@ class Scheduler(SchedulerInterface):
         pid = self.__next_pid
         self.__next_pid += 1
         return pid
+    
     
     def wait_process_check(self):
         ready_process_list = []
@@ -111,6 +117,7 @@ class Scheduler(SchedulerInterface):
         elif type == Process.BATCH_PROCESS:
             self.__batch_processes.put(process)
 
+
     def __enqueue_interactive(self, process: InteractiveProcess):
 
         # wrap entries in a PrioritizedItem so the queue can order them
@@ -119,12 +126,10 @@ class Scheduler(SchedulerInterface):
         # InteractiveProcess instances themselves.
         self.__interactive_processes.put(PrioritizedItem(process.get_priority(), process))
 
+
     def __pop_interactive(self) -> InteractiveProcess:
         return self.__interactive_processes.get().item
-    
-    # def get_context(self) -> str:
-    #     sc = SchedulerContext(self)
-    #     return sc.get()
+
 
     def is_idle(self) -> bool:
         
@@ -150,13 +155,14 @@ class Scheduler(SchedulerInterface):
         return list(self.__system_processes.queue)
 
     def get_interactive_processes(self) -> list[Process]:
-        return list(self.__interactive_processes.queue)
+        temp = list(self.__interactive_processes.queue)
+        return [pi.item for pi in temp]
 
     def get_batch_processes(self) -> list[Process]:
         return list(self.__batch_processes.queue)
 
     def get_wait_processes(self) -> list[Process]:
-        return list(self.__wait_processes)  
+        return list(self.__wait_processes)
 
     def get_dead_processes(self) -> list[Process]:
         return list(self.__dead_processes)
