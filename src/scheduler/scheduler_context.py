@@ -1,7 +1,6 @@
 from scheduler.scheduler import Scheduler
-from process.process import Process
+from process.process import Process, ProcessType
 from cpu import Cpu
-from prioritized_item import PrioritizedItem
 
 class SchedulerContext:
     def __init__(self, scheduler: Scheduler, cpus: list[Cpu]):
@@ -39,7 +38,7 @@ class SchedulerContext:
         self.__res.append(f"  Interactive: {self.__processes_to_str(interactive_procs)}")
         self.__res.append(f"  Batch: {self.__processes_to_str(batch_procs)}")
 
-        wait_procs = self.__scheduler.get_wait_processes()
+        wait_procs = self.__scheduler.get_waiting_processes()
         dead_procs = self.__scheduler.get_dead_processes()
 
         self.__res.append(f"Waiting: {self.__processes_to_str(wait_procs)}")
@@ -58,13 +57,22 @@ class SchedulerContext:
         
         proc = cpu.get_current_process()
         proc_str = self.__process_to_str(proc)
-        type_str = Process.type_to_str(proc.get_type())
+        type_str = self.__process_type_to_str(proc.get_type())
 
         return f"{cpu_str}: {proc_str} ({type_str}) (time_slice={cpu.get_time_slice()})"
     
     
     def __process_to_str(self, process: Process) -> str:
         return f"p{process.get_pid()}"
+    
+    def __process_type_to_str(self, process_type: ProcessType) -> str:
+        types = {
+            ProcessType.SYSTEM_PROCESS: "system",
+            ProcessType.INTERACTIVE_PROCESS: "interactive",
+            ProcessType.BATCH_PROCESS: "batch"
+        }
+
+        return types[process_type]
 
 
     

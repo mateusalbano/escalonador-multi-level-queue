@@ -33,7 +33,7 @@ class SchedulerSimulation:
 
 
     def is_over(self) -> bool:
-        return self.__are_all_cpus_idle() and self.__scheduler.is_idle()
+        return self.__are_all_cpus_idle() and not self.__scheduler.has_alive_processes()
     
     
     def __are_all_cpus_idle(self) -> bool:

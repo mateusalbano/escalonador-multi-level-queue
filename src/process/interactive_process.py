@@ -1,26 +1,26 @@
 import random
-from process.process import Process
+from process.process import Process, ProcessType, ProcessBehaviour
 
 
 class InteractiveProcess(Process):
 
-    def __init__(self, behaviour: int, num_instructions=10, ends=True):
-        super().__init__(num_instructions, ends)
+    def __init__(self, behaviour: int, num_instructions=10, is_permanent=True):
+        super().__init__(num_instructions, is_permanent)
         self.__set_behaviour(behaviour)
         self.__current_wait_time = 0
         self.__elapsed_wait_time = 0
 
-    def __set_behaviour(self, behaviour):
-        if behaviour != Process.CPU_BOUND and behaviour != Process.IO_BOUND:
+    def __set_behaviour(self, behaviour: ProcessBehaviour):
+        if behaviour != ProcessBehaviour.CPU_BOUND and behaviour != ProcessBehaviour.IO_BOUND:
             raise RuntimeError("interactive process behaviour must be either CPU bound or I/O bound")
         
         self.__behaviour = behaviour
 
-    def get_behaviour(self) -> int:
+    def get_behaviour(self) -> ProcessBehaviour:
         return self.__behaviour
     
-    def get_type(self) -> int:
-        return Process.INTERACTIVE_PROCESS
+    def get_type(self) -> ProcessType:
+        return ProcessType.INTERACTIVE_PROCESS
     
     """
     The lower this values gets higher the priority is, that implies:
@@ -32,9 +32,9 @@ class InteractiveProcess(Process):
 
     def execute(self):
         if self.can_execute():
-            if self.__behaviour == Process.CPU_BOUND:
+            if self.__behaviour == ProcessBehaviour.CPU_BOUND:
                 self.__try_io_operation(10)
-            elif self.__behaviour == Process.IO_BOUND:
+            elif self.__behaviour == ProcessBehaviour.IO_BOUND:
                 self.__try_io_operation(20)
 
             self._decrement_num_instructions()

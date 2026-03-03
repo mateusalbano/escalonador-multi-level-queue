@@ -1,16 +1,20 @@
 from abc import ABC, abstractmethod
-class Process(ABC):
+from enum import Enum
 
+class ProcessType(Enum):
     SYSTEM_PROCESS = 0
     INTERACTIVE_PROCESS = 1
     BATCH_PROCESS = 2
 
+class ProcessBehaviour(Enum):
     CPU_BOUND = 0
     IO_BOUND = 1
 
-    def __init__(self, num_instructions = 10, ends = True):
+class Process(ABC):
+
+    def __init__(self, num_instructions = 10, is_permanent = False):
         self._elapsed_execution_time = 0
-        self._set_num_instructions(num_instructions, ends)
+        self._set_num_instructions(num_instructions, is_permanent)
 
     def __str__(self) -> str:
         return f"p{self._pid}"
@@ -21,11 +25,11 @@ class Process(ABC):
     def get_pid(self) -> int:
         return self._pid
 
-    def _set_num_instructions(self, num_instructions, ends):
-        if ends:
-            self._num_instructions = num_instructions
-        else:
+    def _set_num_instructions(self, num_instructions, is_permanent):
+        if is_permanent:
             self._num_instructions = -1
+        else:
+            self._num_instructions = num_instructions
 
     def _decrement_num_instructions(self):
         if self.ends() and not self.is_over():
@@ -40,15 +44,8 @@ class Process(ABC):
     
     def is_over(self) -> bool:
         return self._num_instructions == 0
-    
-    @staticmethod
-    def type_to_str(type: int):
-        type_names = {
-            Process.SYSTEM_PROCESS: "system",
-            Process.INTERACTIVE_PROCESS: "interactive",
-            Process.BATCH_PROCESS: "batch",
-        }
-        return type_names[type]
+
+
     
     @abstractmethod
     def can_execute(self) -> bool:
@@ -59,9 +56,9 @@ class Process(ABC):
         pass
 
     @abstractmethod
-    def get_type(self) -> int:
+    def get_type(self) -> ProcessType:
         pass
 
     @abstractmethod
-    def get_behaviour(self) -> int:
+    def get_behaviour(self) -> ProcessBehaviour:
         pass

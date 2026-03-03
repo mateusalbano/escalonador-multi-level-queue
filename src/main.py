@@ -5,7 +5,7 @@ import tkinter as tk
 import tkinter.messagebox as mb
 from typing import Optional
 
-from process.process import Process
+from process.process import Process, ProcessBehaviour, ProcessType
 from process.commom_process import CommomProcess
 from process.interactive_process import InteractiveProcess
 from scheduler.scheduler_simulation import SchedulerSimulation
@@ -157,7 +157,7 @@ class SchedulerApp:
 
     
     def __create_permanent_flags(self, total: int, permanent_count: int) -> list[bool]:
-        flags = [False] * permanent_count + [True] * (total - permanent_count)
+        flags = [True] * permanent_count + [False] * (total - permanent_count)
         random.shuffle(flags)
         return flags
     
@@ -170,19 +170,19 @@ class SchedulerApp:
         for _ in range(values["system"]):
             num_instruc = get_num_instructions()
 
-            proc = CommomProcess(type=Process.SYSTEM_PROCESS, num_instructions=num_instruc, ends=permanent_flags.pop())
+            proc = CommomProcess(type=ProcessType.SYSTEM_PROCESS, num_instructions=num_instruc, is_permanent=permanent_flags.pop())
             self.__simulator.add_process(proc)
         
         for _ in range(values["interactive"]):
-            behaviour = random.choice([Process.IO_BOUND, Process.CPU_BOUND])
+            behaviour = random.choice([ProcessBehaviour.IO_BOUND, ProcessBehaviour.CPU_BOUND])
             num_instruc = get_num_instructions()
 
-            proc = InteractiveProcess(behaviour=behaviour, num_instructions=num_instruc, ends=permanent_flags.pop())
+            proc = InteractiveProcess(behaviour=behaviour, num_instructions=num_instruc, is_permanent=permanent_flags.pop())
             self.__simulator.add_process(proc)
         
         for _ in range(values["batch"]):
             num_instruc = get_num_instructions()
-            proc = CommomProcess(type=Process.BATCH_PROCESS, num_instructions=num_instruc, ends=permanent_flags.pop())
+            proc = CommomProcess(type=ProcessType.BATCH_PROCESS, num_instructions=num_instruc, is_permanent=permanent_flags.pop())
             self.__simulator.add_process(proc)
     
 
