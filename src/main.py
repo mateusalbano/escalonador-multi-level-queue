@@ -170,19 +170,19 @@ class SchedulerApp:
         for _ in range(values["system"]):
             num_instruc = get_num_instructions()
 
-            proc = CommomProcess(type=ProcessType.SYSTEM_PROCESS, num_instructions=num_instruc, is_permanent=permanent_flags.pop())
+            proc = CommomProcess(type=ProcessType.SYSTEM_PROCESS, num_instructions=num_instruc, permanent=permanent_flags.pop())
             self.__simulator.add_process(proc)
         
         for _ in range(values["interactive"]):
             behaviour = random.choice([ProcessBehaviour.IO_BOUND, ProcessBehaviour.CPU_BOUND])
             num_instruc = get_num_instructions()
 
-            proc = InteractiveProcess(behaviour=behaviour, num_instructions=num_instruc, is_permanent=permanent_flags.pop())
+            proc = InteractiveProcess(behaviour=behaviour, num_instructions=num_instruc, permanent=permanent_flags.pop())
             self.__simulator.add_process(proc)
         
         for _ in range(values["batch"]):
             num_instruc = get_num_instructions()
-            proc = CommomProcess(type=ProcessType.BATCH_PROCESS, num_instructions=num_instruc, is_permanent=permanent_flags.pop())
+            proc = CommomProcess(type=ProcessType.BATCH_PROCESS, num_instructions=num_instruc, permanent=permanent_flags.pop())
             self.__simulator.add_process(proc)
     
 

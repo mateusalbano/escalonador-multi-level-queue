@@ -12,9 +12,9 @@ class ProcessBehaviour(Enum):
 
 class Process(ABC):
 
-    def __init__(self, num_instructions = 10, is_permanent = False):
+    def __init__(self, num_instructions = 10, permanent = False):
         self._elapsed_execution_time = 0
-        self._set_num_instructions(num_instructions, is_permanent)
+        self._set_num_instructions(num_instructions, permanent)
 
     def __str__(self) -> str:
         return f"p{self._pid}"
@@ -25,19 +25,21 @@ class Process(ABC):
     def get_pid(self) -> int:
         return self._pid
 
-    def _set_num_instructions(self, num_instructions, is_permanent):
-        if is_permanent:
+    def _set_num_instructions(self, num_instructions, permanent):
+        if permanent:
             self._num_instructions = -1
         else:
             self._num_instructions = num_instructions
 
-    def _decrement_num_instructions(self):
-        if not self.is_permanent() and not self.is_over():
-            self._num_instructions -= 1
+    def _update_counters(self):
+        if self.is_over():
+            raise RuntimeError("process is over and can't update counters")
 
-    def _increment_execution_time(self):
-        if not self.is_over():
-            self._elapsed_execution_time += 1
+        if not self.is_permanent():
+            self._num_instructions -= 1
+        
+        self._elapsed_execution_time += 1
+
 
     def is_permanent(self) -> bool:
         return self._num_instructions == -1
@@ -47,16 +49,16 @@ class Process(ABC):
     
     @abstractmethod
     def can_execute(self) -> bool:
-        pass
+        ...
 
     @abstractmethod
     def execute(self):
-        pass
+        ...
 
     @abstractmethod
     def get_type(self) -> ProcessType:
-        pass
+        ...
 
     @abstractmethod
     def get_behaviour(self) -> ProcessBehaviour:
-        pass
+        ...

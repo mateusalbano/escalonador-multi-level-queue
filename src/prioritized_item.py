@@ -5,6 +5,3 @@ from typing import Any
 class PrioritizedItem:
     priority: int
     item: Any=field(compare=False)
-
-    def __str__(self) -> str:
-        return str(self.item)

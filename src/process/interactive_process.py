@@ -4,17 +4,12 @@ from process.process import Process, ProcessType, ProcessBehaviour
 
 class InteractiveProcess(Process):
 
-    def __init__(self, behaviour: int, num_instructions=10, is_permanent=False):
-        super().__init__(num_instructions, is_permanent)
-        self.__set_behaviour(behaviour)
+    def __init__(self, behaviour: ProcessBehaviour, num_instructions=10, permanent=False):
+        super().__init__(num_instructions, permanent)
+        self.__behaviour = behaviour
         self.__current_wait_time = 0
         self.__elapsed_wait_time = 0
 
-    def __set_behaviour(self, behaviour: ProcessBehaviour):
-        if behaviour != ProcessBehaviour.CPU_BOUND and behaviour != ProcessBehaviour.IO_BOUND:
-            raise RuntimeError("interactive process behaviour must be either CPU bound or I/O bound")
-        
-        self.__behaviour = behaviour
 
     def get_behaviour(self) -> ProcessBehaviour:
         return self.__behaviour
@@ -31,16 +26,16 @@ class InteractiveProcess(Process):
         return self._elapsed_execution_time - self.__elapsed_wait_time
 
     def execute(self):
-        if self.can_execute():
-            if self.__behaviour == ProcessBehaviour.CPU_BOUND:
-                self.__try_io_operation(10)
-            elif self.__behaviour == ProcessBehaviour.IO_BOUND:
-                self.__try_io_operation(20)
+        if not self.can_execute():
+            raise RuntimeError("process cannot execute")
+        
+        self._update_counters()
+        
+        if self.__behaviour == ProcessBehaviour.CPU_BOUND:
+            self.__try_io_operation(10)
+        elif self.__behaviour == ProcessBehaviour.IO_BOUND:
+            self.__try_io_operation(20)
 
-            self._decrement_num_instructions()
-            self._increment_execution_time()
-        else:
-            raise RuntimeError("process is over and can't execute")
 
     def __try_io_operation(self, probability: float):
         if self._num_instructions == 1:
