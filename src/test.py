@@ -9,6 +9,18 @@ from scheduler.scheduler_simulation import SchedulerSimulation
 clock =  0.5
 scheduler_sim = SchedulerSimulation(clock=clock)
 
+def get_new_random_process() -> Process:
+    options = [ProcessType.SYSTEM_PROCESS, ProcessType.INTERACTIVE_PROCESS, ProcessType.BATCH_PROCESS]
+    choice = random.choice(options)
+
+    if choice == ProcessType.SYSTEM_PROCESS:
+        return CommomProcess(ProcessType.SYSTEM_PROCESS)
+    elif choice == ProcessType.INTERACTIVE_PROCESS:
+        behaviour = random.choice([ProcessBehaviour.CPU_BOUND, ProcessBehaviour.IO_BOUND])
+        return InteractiveProcess(behaviour)
+    else: # ProcessType.BATCH_PROCESS
+        return CommomProcess(ProcessType.BATCH_PROCESS)
+
 
 for i in range(5):
     scheduler_sim.add_process(CommomProcess(ProcessType.SYSTEM_PROCESS))
@@ -29,8 +41,8 @@ while not scheduler_sim.is_over():
     print(ctx)
     time.sleep(clock)
     elapsed_time += 1
-    if elapsed_time % 10 == 0:
-        scheduler_sim.add_process(CommomProcess(ProcessType.SYSTEM_PROCESS))
+    if elapsed_time % 15 == 0:
+        scheduler_sim.add_process(get_new_random_process())
 
 final_ctx = scheduler_sim.get_context()
 scheduler_sim.stop()

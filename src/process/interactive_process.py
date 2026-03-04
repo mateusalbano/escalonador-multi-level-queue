@@ -4,7 +4,7 @@ from process.process import Process, ProcessType, ProcessBehaviour
 
 class InteractiveProcess(Process):
 
-    def __init__(self, behaviour: int, num_instructions=10, is_permanent=True):
+    def __init__(self, behaviour: int, num_instructions=10, is_permanent=False):
         super().__init__(num_instructions, is_permanent)
         self.__set_behaviour(behaviour)
         self.__current_wait_time = 0
@@ -23,7 +23,7 @@ class InteractiveProcess(Process):
         return ProcessType.INTERACTIVE_PROCESS
     
     """
-    The lower this values gets higher the priority is, that implies:
+    The lower this value gets higher the priority is.
     higher execution time -> smaller priority
     higher wait time -> higher priority
     """

@@ -10,11 +10,6 @@ class SchedulerContext:
 
 
     def get(self) -> str:
-        """Return a snapshot of the scheduler's state as a string.
-
-        Includes per-CPU assignments, ready queues by type, waiting list and
-        dead processes. Processes are formatted as p{pid}.
-        """
         self.__res = []
         self.__add_cpus_to_res()
         self.__add_scheduler_to_res()

@@ -13,7 +13,7 @@ class Cpu:
         self.__scheduler = scheduler
         self.__time_slice = 0
         self.__id = id
-        self.__current_process = None
+        self.__current_process: Process = None
         self.__clock = clock
         self.__running = False
 

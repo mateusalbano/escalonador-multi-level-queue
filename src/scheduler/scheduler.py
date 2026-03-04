@@ -1,4 +1,4 @@
-import queue
+from queue import Queue, PriorityQueue
 
 import random
 from typing import Optional, Tuple
@@ -14,12 +14,12 @@ class Scheduler(SchedulerInterface):
     def __init__(self, time_slice = 5):
         self.__id_generator = IdGenerator()
 
-        self.__system_processes = queue.Queue()
-        self.__interactive_processes = queue.PriorityQueue()
-        self.__batch_processes = queue.Queue()
+        self.__system_processes = Queue()
+        self.__interactive_processes: PriorityQueue[PrioritizedItem] = PriorityQueue()
+        self.__batch_processes = Queue()
 
-        self.__waiting_processes = []
-        self.__dead_processes = []
+        self.__waiting_processes: list[InteractiveProcess] = []
+        self.__dead_processes: list[Process] = []
 
         self.__time_slice = time_slice
         
@@ -64,18 +64,19 @@ class Scheduler(SchedulerInterface):
         self.__retrieve_pid(process.get_pid())
 
 
-    def __choose_process_type(self) -> int:
+    def __choose_process_type(self) -> Optional[ProcessType]:
         options = self.__create_process_type_options()
         if len(options) == 0:
-            return -1
+            return None
         
-        choice = random.randint(0, len(options) - 1)
-        return options[choice]
+        return random.choice(options)
     
         
-    """Return a list with the type options, notice that some types appear more than others,
-        which means some types have higher priorities than others"""
-    def __create_process_type_options(self):
+    """
+    Return a list with the type options, notice that some types appear more than others,
+    which means some types have higher priorities
+    """
+    def __create_process_type_options(self) -> list[ProcessType]:
         options = []
         if not self.__system_processes.empty():
             options.extend([ProcessType.SYSTEM_PROCESS, ProcessType.SYSTEM_PROCESS,
@@ -127,12 +128,14 @@ class Scheduler(SchedulerInterface):
             self.__batch_processes.put(process)
 
 
+    """
+    wrap entries in a PrioritizedItem so the queue can order them
+    solely by priority. Tuples would cause a TypeError when two
+    priorities are equal, because Python would try to compare the
+    InteractiveProcess instances themselves.
+    """
     def __enqueue_interactive(self, process: InteractiveProcess):
 
-        # wrap entries in a PrioritizedItem so the queue can order them
-        # solely by priority.  Tuples would cause a TypeError when two
-        # priorities are equal, because Python would try to compare the
-        # InteractiveProcess instances themselves.
         self.__interactive_processes.put(PrioritizedItem(process.get_priority(), process))
 
 

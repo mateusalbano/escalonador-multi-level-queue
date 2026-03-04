@@ -32,20 +32,18 @@ class Process(ABC):
             self._num_instructions = num_instructions
 
     def _decrement_num_instructions(self):
-        if self.ends() and not self.is_over():
+        if not self.is_permanent() and not self.is_over():
             self._num_instructions -= 1
 
     def _increment_execution_time(self):
         if not self.is_over():
             self._elapsed_execution_time += 1
 
-    def ends(self) -> bool:
-        return self._num_instructions != -1
+    def is_permanent(self) -> bool:
+        return self._num_instructions == -1
     
     def is_over(self) -> bool:
         return self._num_instructions == 0
-
-
     
     @abstractmethod
     def can_execute(self) -> bool:
