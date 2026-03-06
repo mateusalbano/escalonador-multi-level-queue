@@ -7,5 +7,5 @@ from process.process import Process
 
 class SchedulerInterface(Protocol):
 
-    def context_switch(self, current: Optional[Process]) -> Tuple[Optional[Process], int]:
+    def context_switch(self, process: Optional[Process]) -> Tuple[Optional[Process], int]:
         ...

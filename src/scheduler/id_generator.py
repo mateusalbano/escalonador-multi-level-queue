@@ -20,12 +20,8 @@ class IdGenerator():
 
 
     def retrieve_id(self, id: int):
-        if not self.__is_id_used(id):
-            raise RuntimeError("can't retrive unused id")
+        if id not in self.__used_ids:
+            raise RuntimeError("can't retrieve unused id")
         
         self.__next_ids.put(id)
         self.__used_ids.remove(id)
-
-
-    def __is_id_used(self, id: int) -> bool:
-        return id in self.__used_ids

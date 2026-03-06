@@ -31,7 +31,7 @@ class Scheduler(SchedulerInterface):
 
 
     """Receives a process and gives another one and a time slice"""
-    def context_switch(self, process: Process) -> Tuple[Optional[Process], int]:
+    def context_switch(self, process: Optional[Process]) -> Tuple[Optional[Process], int]:
         if process:
             self.__schedule_process(process)
 
@@ -135,7 +135,6 @@ class Scheduler(SchedulerInterface):
     InteractiveProcess instances themselves.
     """
     def __enqueue_interactive(self, process: InteractiveProcess):
-
         self.__interactive_processes.put(PrioritizedItem(process.get_priority(), process))
 
 
@@ -168,7 +167,7 @@ class Scheduler(SchedulerInterface):
 
     def get_interactive_processes(self) -> list[Process]:
         temp = list(self.__interactive_processes.queue)
-        return [pi.item for pi in temp]
+        return [p.item for p in temp]
 
     def get_batch_processes(self) -> list[Process]:
         return list(self.__batch_processes.queue)

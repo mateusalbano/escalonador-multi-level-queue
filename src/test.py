@@ -41,7 +41,7 @@ while not scheduler_sim.is_over():
     print(ctx)
     time.sleep(clock)
     elapsed_time += 1
-    if elapsed_time % 15 == 0:
+    if elapsed_time % 10 == 0:
         scheduler_sim.add_process(get_new_random_process())
 
 final_ctx = scheduler_sim.get_context()
