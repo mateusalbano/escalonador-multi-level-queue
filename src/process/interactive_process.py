@@ -11,7 +11,7 @@ class InteractiveProcess(Process):
         self.__elapsed_wait_time = 0
 
 
-    
+    # This method is used by the priority queue to compare processes based on their priority.
     def __lt__(self, other: InteractiveProcess):
         return self.get_priority() < other.get_priority()
 
