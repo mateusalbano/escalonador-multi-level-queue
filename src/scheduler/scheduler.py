@@ -3,7 +3,6 @@ from queue import Queue, PriorityQueue
 import random
 from typing import Optional, Tuple
 
-from prioritized_item import PrioritizedItem
 from process.process import Process, ProcessType
 from scheduler.scheduler_interface import SchedulerInterface
 from process.interactive_process import InteractiveProcess
@@ -15,7 +14,7 @@ class Scheduler(SchedulerInterface):
         self.__id_generator = IdGenerator()
 
         self.__system_processes = Queue()
-        self.__interactive_processes: PriorityQueue[PrioritizedItem] = PriorityQueue()
+        self.__interactive_processes: PriorityQueue[InteractiveProcess] = PriorityQueue()
         self.__batch_processes = Queue()
 
         self.__waiting_processes: list[InteractiveProcess] = []
@@ -40,8 +39,7 @@ class Scheduler(SchedulerInterface):
         if type == ProcessType.SYSTEM_PROCESS:
             return self.__system_processes.get(), self.__time_slice
         if type == ProcessType.INTERACTIVE_PROCESS:
-            # return the actual process object, not the PrioritizedItem wrapper
-            return self.__pop_interactive(), self.__time_slice
+            return self.__interactive_processes.get(), self.__time_slice
         elif type == ProcessType.BATCH_PROCESS:
             return self.__batch_processes.get(), self.__time_slice
         
@@ -93,11 +91,11 @@ class Scheduler(SchedulerInterface):
 
 
     def __get_next_pid(self) -> int:
-        pid = self.__id_generator.get_next_id()
-        return pid
+        return self.__id_generator.get_next_id()
     
     def __retrieve_pid(self, id: int):
         self.__id_generator.retrieve_id(id)
+
     
     def wait_process_check(self):
 
@@ -119,23 +117,9 @@ class Scheduler(SchedulerInterface):
         if type == ProcessType.SYSTEM_PROCESS:
             self.__system_processes.put(process)
         elif type == ProcessType.INTERACTIVE_PROCESS:
-            self.__enqueue_interactive(process)
+            self.__interactive_processes.put(process)
         elif type == ProcessType.BATCH_PROCESS:
             self.__batch_processes.put(process)
-
-
-    """
-    wrap entries in a PrioritizedItem so the queue can order them
-    solely by priority. Tuples would cause a TypeError when two
-    priorities are equal, because Python would try to compare the
-    InteractiveProcess instances themselves.
-    """
-    def __enqueue_interactive(self, process: InteractiveProcess):
-        self.__interactive_processes.put(PrioritizedItem(process.get_priority(), process))
-
-
-    def __pop_interactive(self) -> InteractiveProcess:
-        return self.__interactive_processes.get().item
 
 
     def has_alive_processes(self) -> bool:
@@ -162,13 +146,12 @@ class Scheduler(SchedulerInterface):
         return list(self.__system_processes.queue)
 
     def get_interactive_processes(self) -> list[Process]:
-        temp = list(self.__interactive_processes.queue)
-        return [p.item for p in temp]
+        return list(self.__interactive_processes.queue)
 
     def get_batch_processes(self) -> list[Process]:
         return list(self.__batch_processes.queue)
 
-    def get_waiting_processes(self) -> list[Process]:
+    def get_waiting_processes(self) -> list[InteractiveProcess]:
         return list(self.__waiting_processes)
 
     def get_dead_processes(self) -> list[Process]:

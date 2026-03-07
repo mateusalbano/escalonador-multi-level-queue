@@ -12,6 +12,8 @@ class SchedulerSimulation:
     def __init__(self,time_slice = 5, n_cpus = 4, clock = 1):
         self.__scheduler = Scheduler(time_slice)
         self.__cpus = self.__create_cpus(n_cpus, clock)
+        self.__scheduler_context = SchedulerContext(self.__scheduler, self.__cpus)
+
         self.__running = False
         self.__clock = clock
 
@@ -26,11 +28,8 @@ class SchedulerSimulation:
     def add_process(self, process: Process):
         self.__scheduler.add_process(process)
         
-
     def get_context(self) -> str:
-        sc = SchedulerContext(self.__scheduler, self.__cpus)
-        return sc.get()
-
+        return self.__scheduler_context.get()
 
     def is_over(self) -> bool:
         return self.__are_all_cpus_idle() and not self.__scheduler.has_alive_processes()

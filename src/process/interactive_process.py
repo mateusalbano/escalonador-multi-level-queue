@@ -11,6 +11,10 @@ class InteractiveProcess(Process):
         self.__elapsed_wait_time = 0
 
 
+    
+    def __lt__(self, other: InteractiveProcess):
+        return self.get_priority() < other.get_priority()
+
     def get_behaviour(self) -> ProcessBehaviour:
         return self.__behaviour
     
@@ -63,3 +67,4 @@ class InteractiveProcess(Process):
         
         self.__current_wait_time -= 1
         self.__elapsed_wait_time += 1
+        
