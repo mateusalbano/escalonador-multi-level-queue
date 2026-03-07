@@ -39,18 +39,14 @@ class Cpu:
     def is_idle(self) -> bool:
         return self.__current_process == None
     
-    
     def set_current_process(self, new_process):
         self.__current_process = new_process
-
     
     def get_current_process(self) -> Process:
         return self.__current_process
     
-
     def get_time_slice(self) -> int:
         return self.__time_slice
-    
 
     def get_id(self) -> int:
         return self.__id
@@ -74,7 +70,6 @@ class Cpu:
 
     def __can_execute(self) -> bool:
         return not self.is_idle() and self.__current_process.can_execute()
-
 
     def __context_switch(self):
         self.__current_process, self.__time_slice = self.__scheduler.context_switch(self.__current_process)

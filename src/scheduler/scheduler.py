@@ -100,21 +100,17 @@ class Scheduler(SchedulerInterface):
         self.__id_generator.retrieve_id(id)
     
     def wait_process_check(self):
-        ready_process_list = []
 
         for process in self.__waiting_processes:
             process.wait()
 
             if process.can_execute():
-                ready_process_list.append(process)
-
-        self.__wake_up_process_list(ready_process_list)
+                self.__wake_up_process(process)
 
 
-    def __wake_up_process_list(self, process_list):
-        for process in process_list:
-            self.__waiting_processes.remove(process)
-            self.__add_process_to_ready(process) 
+    def __wake_up_process(self, process: Process):
+        self.__waiting_processes.remove(process)
+        self.__add_process_to_ready(process)
 
     
     def __add_process_to_ready(self, process: Process):

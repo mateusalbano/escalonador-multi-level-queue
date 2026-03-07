@@ -22,6 +22,7 @@ class SchedulerContext:
         for cpu in self.__cpus:
             self.__res.append(f"  {self.__cpu_to_str(cpu)}")
 
+
     def __add_scheduler_to_res(self):
 
         system_procs = self.__scheduler.get_system_processes()
@@ -60,6 +61,7 @@ class SchedulerContext:
     def __process_to_str(self, process: Process) -> str:
         return f"p{process.get_pid()}"
     
+
     def __process_type_to_str(self, process_type: ProcessType) -> str:
         types = {
             ProcessType.SYSTEM_PROCESS: "system",

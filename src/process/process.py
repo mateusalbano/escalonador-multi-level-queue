@@ -1,20 +1,21 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 
+class ProcessBehaviour(Enum):
+    CPU_BOUND = 0
+    IO_BOUND = 1
+
 class ProcessType(Enum):
     SYSTEM_PROCESS = 0
     INTERACTIVE_PROCESS = 1
     BATCH_PROCESS = 2
-
-class ProcessBehaviour(Enum):
-    CPU_BOUND = 0
-    IO_BOUND = 1
 
 class Process(ABC):
 
     def __init__(self, num_instructions = 10, permanent = False):
         self._elapsed_execution_time = 0
         self._set_num_instructions(num_instructions, permanent)
+
 
     def __str__(self) -> str:
         return f"p{self._pid}"
@@ -24,12 +25,14 @@ class Process(ABC):
 
     def get_pid(self) -> int:
         return self._pid
+    
 
     def _set_num_instructions(self, num_instructions, permanent):
         if permanent:
             self._num_instructions = -1
         else:
             self._num_instructions = num_instructions
+
 
     def _update_counters(self):
         if self.is_over():
@@ -56,9 +59,9 @@ class Process(ABC):
         ...
 
     @abstractmethod
-    def get_type(self) -> ProcessType:
+    def get_behaviour(self) -> ProcessBehaviour:
         ...
 
     @abstractmethod
-    def get_behaviour(self) -> ProcessBehaviour:
+    def get_type(self) -> ProcessType:
         ...

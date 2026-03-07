@@ -1,4 +1,4 @@
-from process.process import Process, ProcessType, ProcessBehaviour
+from process.process import Process, ProcessBehaviour, ProcessType
 
 
 class CommomProcess(Process):
@@ -14,11 +14,13 @@ class CommomProcess(Process):
     def get_type(self) -> ProcessType:
         return self.__type
 
+
     def execute(self):
         if not self.can_execute():
             raise RuntimeError("process cannot execute")
         
         self._update_counters()
+
 
     def can_execute(self) -> bool:
         return not self.is_over()

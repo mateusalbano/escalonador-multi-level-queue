@@ -1,5 +1,5 @@
 import random
-from process.process import Process, ProcessType, ProcessBehaviour
+from process.process import Process, ProcessBehaviour, ProcessType
 
 
 class InteractiveProcess(Process):
@@ -25,6 +25,7 @@ class InteractiveProcess(Process):
     def get_priority(self) -> int:
         return self._elapsed_execution_time - self.__elapsed_wait_time
 
+
     def execute(self):
         if not self.can_execute():
             raise RuntimeError("process cannot execute")
@@ -45,6 +46,7 @@ class InteractiveProcess(Process):
         if probability >= choice:
             self.__make_io_operation()
     
+
     def __make_io_operation(self):
         self.__current_wait_time = random.randint(1, 4)
 
@@ -53,6 +55,7 @@ class InteractiveProcess(Process):
     
     def can_execute(self) -> bool:
         return not self.is_over() and not self.is_idle()
+
 
     def wait(self):
         if not self.is_idle():

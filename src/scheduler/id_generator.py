@@ -2,6 +2,12 @@ import queue
 
 
 class IdGenerator():
+    """
+    Class responsible for generating unique ids for the user when they are not in use.
+    When asked for a id, it will return the smallest available id.
+    When an id is retrieved to the generator, it will be put back in the pool of available ids.
+    """
+
 
     def __init__(self):
         self.__next_ids = queue.PriorityQueue()

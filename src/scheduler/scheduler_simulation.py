@@ -25,7 +25,7 @@ class SchedulerSimulation:
 
     def add_process(self, process: Process):
         self.__scheduler.add_process(process)
-
+        
 
     def get_context(self) -> str:
         sc = SchedulerContext(self.__scheduler, self.__cpus)
