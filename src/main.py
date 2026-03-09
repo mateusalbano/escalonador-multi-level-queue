@@ -165,24 +165,27 @@ class SchedulerApp:
     def __populate_processes(self, values: dict, permanent_flags: list[bool]):
 
         def get_num_instructions():
+            if permanent_flags.pop():
+                return Process.INFINITE_INSTRUCTIONS
+            
             return random.randint(ProcessConfig.MIN_INSTRUCTIONS, ProcessConfig.MAX_INSTRUCTIONS)
 
         for _ in range(values["system"]):
             num_instruc = get_num_instructions()
 
-            proc = CommomProcess(type=ProcessType.SYSTEM_PROCESS, num_instructions=num_instruc, permanent=permanent_flags.pop())
+            proc = CommomProcess(type=ProcessType.SYSTEM_PROCESS, num_instructions=num_instruc)
             self.__simulator.add_process(proc)
         
         for _ in range(values["interactive"]):
             behaviour = random.choice([ProcessBehaviour.IO_BOUND, ProcessBehaviour.CPU_BOUND])
             num_instruc = get_num_instructions()
 
-            proc = InteractiveProcess(behaviour=behaviour, num_instructions=num_instruc, permanent=permanent_flags.pop())
+            proc = InteractiveProcess(behaviour=behaviour, num_instructions=num_instruc)
             self.__simulator.add_process(proc)
         
         for _ in range(values["batch"]):
             num_instruc = get_num_instructions()
-            proc = CommomProcess(type=ProcessType.BATCH_PROCESS, num_instructions=num_instruc, permanent=permanent_flags.pop())
+            proc = CommomProcess(type=ProcessType.BATCH_PROCESS, num_instructions=num_instruc)
             self.__simulator.add_process(proc)
     
 

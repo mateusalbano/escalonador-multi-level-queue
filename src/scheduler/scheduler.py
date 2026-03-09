@@ -20,6 +20,13 @@ class Scheduler(SchedulerInterface):
         self.__waiting_processes: list[InteractiveProcess] = []
         self.__dead_processes: list[Process] = []
 
+        self.__set_time_slice(time_slice)
+
+
+    def __set_time_slice(self, time_slice: int):
+        if time_slice <= 0:
+            raise ValueError("time_slice must be greater than 0")
+        
         self.__time_slice = time_slice
         
 

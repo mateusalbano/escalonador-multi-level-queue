@@ -9,21 +9,31 @@ from scheduler.scheduler_context import SchedulerContext
 
 class SchedulerSimulation:
 
-    def __init__(self,time_slice = 5, n_cpus = 4, clock = 1):
+    def __init__(self, time_slice = 5, n_cpus = 4, clock = 1.0):
         self.__scheduler = Scheduler(time_slice)
         self.__cpus = self.__create_cpus(n_cpus, clock)
         self.__scheduler_context = SchedulerContext(self.__scheduler, self.__cpus)
 
         self.__running = False
-        self.__clock = clock
+        self.__set_clock(clock)
 
 
-    def __create_cpus(self, n_cpus: int, clock: int) -> list[Cpu]:
+    def __create_cpus(self, n_cpus: int, clock: float) -> list[Cpu]:
+
+        if n_cpus <= 0:
+            raise ValueError("n_cpus must be greater than 0")
+
         cpus = []
         for i in range(n_cpus):
             cpus.append(Cpu(self.__scheduler, i, clock))
         return cpus
 
+
+    def __set_clock(self, clock: float):
+        if clock <= 0:
+            raise ValueError("clock must be greater than 0")
+        
+        self.__clock = clock
 
     def add_process(self, process: Process):
         self.__scheduler.add_process(process)

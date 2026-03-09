@@ -9,17 +9,39 @@ from scheduler.scheduler_interface import SchedulerInterface
 
 class Cpu:
 
-    def __init__(self, scheduler: SchedulerInterface, id: int, clock = 1):
+    def __init__(self, scheduler: SchedulerInterface, id: int, clock = 1.0):
+        self.__set_id(id)
+        self.__set_clock(clock)
         self.__scheduler = scheduler
         self.__time_slice = 0
-        self.__id = id
         self.__current_process: Process = None
-        self.__clock = clock
         self.__running = False
         
 
     def __str__(self) -> str:
         return f"CPU{self.__id}"
+    
+    
+    def __set_id(self, id: int):
+        if id < 0:
+            raise ValueError("id must be greater than or equal to 0")
+        
+        self.__id = id
+
+
+    def __get_id(self) -> int:
+        return self.__id
+    
+
+    def __set_clock(self, clock: float):
+        if clock <= 0:
+            raise ValueError("clock must be greater than 0")
+        
+        self.__clock = clock
+
+    
+    def __get_clock(self) -> float:
+        return self.__clock
     
     
     def start(self):
