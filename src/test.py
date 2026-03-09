@@ -6,8 +6,8 @@ from process.interactive_process import InteractiveProcess
 from process.process import Process, ProcessBehaviour, ProcessType
 from scheduler.scheduler_simulation import SchedulerSimulation
 
-clock =  0.5
-scheduler_sim = SchedulerSimulation(clock=clock)
+clock_rate = 0.5
+scheduler_sim = SchedulerSimulation(clock_rate=clock_rate)
 
 def get_new_random_process() -> Process:
     options = [ProcessType.SYSTEM_PROCESS, ProcessType.INTERACTIVE_PROCESS, ProcessType.BATCH_PROCESS]
@@ -39,7 +39,7 @@ elapsed_time = 0
 while not scheduler_sim.is_over():
     ctx = scheduler_sim.get_context()
     print(ctx)
-    time.sleep(clock)
+    time.sleep(clock_rate)
     elapsed_time += 1
     if elapsed_time % 10 == 0:
         scheduler_sim.add_process(get_new_random_process())

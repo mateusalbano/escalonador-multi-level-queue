@@ -9,9 +9,9 @@ from scheduler.scheduler_interface import SchedulerInterface
 
 class Cpu:
 
-    def __init__(self, scheduler: SchedulerInterface, id: int, clock = 1.0):
+    def __init__(self, scheduler: SchedulerInterface, id: int, clock_rate = 1.0):
         self.__set_id(id)
-        self.__set_clock(clock)
+        self.__set_clock_rate(clock_rate)
         self.__scheduler = scheduler
         self.__time_slice = 0
         self.__current_process: Process = None
@@ -33,15 +33,11 @@ class Cpu:
         return self.__id
     
 
-    def __set_clock(self, clock: float):
-        if clock <= 0:
-            raise ValueError("clock must be greater than 0")
+    def __set_clock_rate(self, clock_rate: float):
+        if clock_rate <= 0:
+            raise ValueError("clock_rate must be greater than 0")
         
-        self.__clock = clock
-
-    
-    def __get_clock(self) -> float:
-        return self.__clock
+        self.__clock_rate = clock_rate
     
     
     def start(self):
@@ -82,7 +78,7 @@ class Cpu:
             if self.__time_slice == 0 or not self.__can_execute():
                 self.__context_switch()
             
-            time.sleep(self.__clock)
+            time.sleep(self.__clock_rate)
 
     
     def __execute(self):

@@ -3,14 +3,9 @@ from process.process import Process, ProcessBehaviour, ProcessType
 
 class CommomProcess(Process):
 
-    def __init__(self, type: ProcessType, num_instructions=10):
+    def __init__(self, type: ProcessType, num_instructions = 10):
         super().__init__(num_instructions)
-        self.__set_num_instructions(num_instructions)
         self.__type = type
-
-    def __set_num_instructions(self, num_instructions: int):
-        if num_instructions <= 0 and num_instructions != Process.INFINITE_INSTRUCTIONS:
-            raise ValueError("num_instructions must be greater than 0 or equal to INFINITE_INSTRUCTIONS")
 
 
     def get_behaviour(self) -> ProcessBehaviour:

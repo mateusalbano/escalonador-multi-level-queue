@@ -4,7 +4,7 @@ from process.process import Process, ProcessBehaviour, ProcessType
 
 class InteractiveProcess(Process):
 
-    def __init__(self, behaviour: ProcessBehaviour, num_instructions=10):
+    def __init__(self, behaviour: ProcessBehaviour, num_instructions = 10):
         super().__init__(num_instructions)
         self.__behaviour = behaviour
         self.__current_wait_time = 0

@@ -37,7 +37,7 @@ class SpinboxConfig:
         {"from_": 0, "to": 15, "value": 5},      # interactive processes
         {"from_": 0, "to": 15, "value": 5},      # batch processes
         {"from_": 0, "to": 45, "value": 1},      # permanent processes
-        {"from_": 0.2, "to": 3, "increment": 0.2, "value": 1.0},  # clock
+        {"from_": 0.2, "to": 3, "increment": 0.2, "value": 1.0},  # clock_rate
         {"from_": 1, "to": 20, "value": 4},      # cpus
     ]
 
@@ -122,7 +122,7 @@ class SchedulerApp:
             "interactive": int(self.__spinboxes[1].get()),
             "batch": int(self.__spinboxes[2].get()),
             "permanent": int(self.__spinboxes[3].get()),
-            "clock": float(self.__spinboxes[4].get()),
+            "clock_rate": float(self.__spinboxes[4].get()),
             "cpus": int(self.__spinboxes[5].get()),
         }
     
@@ -192,7 +192,7 @@ class SchedulerApp:
     def __run_simulator(self):
         while self.__running and not self.__simulator.is_over():
             self.__update_output(self.__simulator.get_context())
-            time.sleep(self.__simulator.get_clock())
+            time.sleep(self.__simulator.get_clock_rate())
         
         # Final update
         self.__update_output(self.__simulator.get_context() + "\nEND")
@@ -217,7 +217,7 @@ class SchedulerApp:
         total = values["system"] + values["interactive"] + values["batch"]
         permanent_flags = self.__create_permanent_flags(total, values["permanent"])
         
-        self.__simulator = SchedulerSimulation(clock=values["clock"], n_cpus=values["cpus"])
+        self.__simulator = SchedulerSimulation(clock_rate=values["clock_rate"], n_cpus=values["cpus"])
         self.__populate_processes(values, permanent_flags)
         
         self.__simulator.start()
